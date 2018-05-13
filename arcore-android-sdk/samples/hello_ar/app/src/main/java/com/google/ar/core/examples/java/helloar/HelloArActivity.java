@@ -233,7 +233,9 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             backgroundRenderer.createOnGlThread(/*context=*/ this);
             planeRenderer.createOnGlThread(/*context=*/ this, "models/trigrid.png");
             pointCloudRenderer.createOnGlThread(/*context=*/ this);
-            springOverlayRenderer.createOnGlThread(this, gl);
+
+
+           // springOverlayRenderer.createOnGlThread(this, gl);
 
             virtualObject.createOnGlThread(/*context=*/ this, "models/springlogo.obj", "models/springlogo.png");
             virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
@@ -375,10 +377,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             }
             //Spring Overlay Renderer
 
-            springOverlayRenderer.update(this, camera, groundAnchor);
-            surfaceView.setEGLContextClientVersion(1);
-            surfaceView.setRenderer(springOverlayRenderer);
-            surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+           // springOverlayRenderer.update(this, camera, groundAnchor);
+          //  springOverlayRenderer.draw(this,gl, overlayView);
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
