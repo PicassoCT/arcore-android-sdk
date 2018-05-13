@@ -6,64 +6,65 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.opengl.EGLConfig;
-import android.opengl.GLSurfaceView;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLUtils;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.google.ar.core.Anchor;
-import com.google.ar.core.Trackable;
-import com.google.ar.core.TrackingState;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
+import com.google.ar.core.Trackable;
+import com.google.ar.core.TrackingState;
+import com.google.ar.core.examples.java.common.tcpClient.*;
+import com.google.ar.core.examples.java.common.helpers.comonUtils;
+import com.google.ar.core.examples.java.common.tcpClient.Server;
 
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 import javax.microedition.khronos.opengles.GL10;
 
 
-public  class SpringOverlayRenderer  {
+public class SpringOverlayRenderer implements IPackageRecivedCallback  {
 
     Collection<Anchor> Anchors;
     Pose MapCenterPose;
     Pose cameraPose;
 
-    boolean stillConnected = false;
+
+    public boolean stillConnected = false;
 
     int width;
     int heigth;
-    /*uniforms and attributes*/
-    int positionAttribute;
-    int texCoordAttribute;
-    int textureUniform;
+    Server tcpConnection;
+    Paint ipAdressPaint = new Paint();
 
     //Shader Variables
     Bitmap oldBuffer;
     Bitmap currentBuffer;
-
+    public Bitmap myBitmap;
     private int[] textures;
 
     private static final String TAG = SpringOverlayRenderer.class.getSimpleName();
 
-    private static final String OVERLAY_BUFFER_NAME = "models/springoverlayraw.png";
+    private static final String OVERLAY_BUFFER_NAME = "drawable/ic_launcher.png";
 
 
-    private static final float[] VERTEX_COORDINATES = new float[] {
+    private static final float[] VERTEX_COORDINATES = new float[]{
             -1.0f, +1.0f, 0.0f,
             +1.0f, +1.0f, 0.0f,
             -1.0f, -1.0f, 0.0f,
             +1.0f, -1.0f, 0.0f
     };
 
-    private static final float[] TEXTURE_COORDINATES = new float[] {
+    private static final float[] TEXTURE_COORDINATES = new float[]{
             0.0f, 0.0f,
             1.0f, 0.0f,
             0.0f, 1.0f,
@@ -77,9 +78,10 @@ public  class SpringOverlayRenderer  {
 
 
     public void createOnGlThread(Context context, GL10 gl) throws IOException {
+
         width = Resources.getSystem().getDisplayMetrics().widthPixels;
         heigth = Resources.getSystem().getDisplayMetrics().heightPixels;
-        currentBuffer= BitmapFactory.decodeStream(context.getAssets().open(OVERLAY_BUFFER_NAME));
+        currentBuffer = BitmapFactory.decodeStream(context.getAssets().open(OVERLAY_BUFFER_NAME));
 
         textures = new int[1];
         gl.glEnable(GL10.GL_TEXTURE_2D);
@@ -94,34 +96,27 @@ public  class SpringOverlayRenderer  {
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
 
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0,  currentBuffer, 0);
+        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, currentBuffer, 0);
     }
-
-
 
 
     /*Constructor*/
     void SpringOverlayRenderer() {
-
+        tcpConnection = new Server();
     }
 
 
-
     /*Initalization of the Device as a AR Device*/
-    void checkConnection() {
+    boolean checkConnection() {
 
         width = Resources.getSystem().getDisplayMetrics().widthPixels;
         heigth = Resources.getSystem().getDisplayMetrics().heightPixels;
 
+        if (!stillConnected)
+            return restoreConnection();
 
-        while (!stillConnected) {
-            stillConnected = restoreConnection();
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException i) {
-            }
-            ;
-        }
+
+        return stillConnected;
     }
 
     boolean restoreConnection() {
@@ -135,33 +130,29 @@ public  class SpringOverlayRenderer  {
     /*updates the Data*/
     public void update(Context context, Camera camera, Anchor groundAnchor) {
 
-        checkConnection();
+        stillConnected = checkConnection();
+        if (stillConnected && groundAnchor != null) {
+
+            MapCenterPose = getMapCenterFromAnchor(groundAnchor);//Computate center of Map
 
 
-        MapCenterPose = getMapCenterFromAnchor(groundAnchor);//Computate center of Map
+            if (camera.getTrackingState() == TrackingState.TRACKING) {
+                //Get Camera Position relative to MapCenter
+                cameraPose = camera.getPose();
+            } else {
+                cameraPose = camera.getDisplayOrientedPose();
+            }
 
-
-        if (camera.getTrackingState() == TrackingState.TRACKING) {
-            //Get Camera Position relative to MapCenter
-            cameraPose = camera.getPose();
-        } else {
-            cameraPose = camera.getDisplayOrientedPose();
+            //Transfer Data via USB-Cable an X86  dll
+            stillConnected = sendDataToSpring(cameraPose, MapCenterPose);
         }
 
-        //Transfer Data via USB-Cable an X86  dll
-        stillConnected = sendDataToSpring(cameraPose, MapCenterPose);
-
-        //Picture recived
-        try {
-            stillConnected = reciveDataFromSpring(context);
-        } catch (IOException i) {
-        }
         ;
     }
 
     /*Draw the buffer
      */
-    public void draw(Context context, GL10 gl, View view) {
+    public void draw(Context context, GL10 gl, ImageView view) {
         gl.glActiveTexture(GL10.GL_TEXTURE0);
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 
@@ -169,12 +160,12 @@ public  class SpringOverlayRenderer  {
         gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, TEXCOORD_BUFFER);
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 
-        if ( !stillConnected) {
+        if (!stillConnected) {
             //On timeout draw last completed picture
             redrawLastBuffer(context, view);
         } else {
             //Draw Frame over stored picture
-            drawNewBuffer(context,view);
+            drawNewBuffer(context, view);
         }
 
 
@@ -193,7 +184,9 @@ public  class SpringOverlayRenderer  {
     /*Calculates the MapCenter
      */
     Pose getMapCenterFromAnchor(Anchor anchor) {
+
         return anchor.getPose();
+
     }
 	
 	/* Calculates the Position of the MapCenter for a single or none anchors
@@ -216,8 +209,9 @@ public  class SpringOverlayRenderer  {
     */
     boolean reciveDataFromSpring(Context context) throws IOException {
         //store the formerly newBuffer in the oldBuffer
-        oldBuffer = currentBuffer;
-        currentBuffer  = BitmapFactory.decodeStream(context.getAssets().open(OVERLAY_BUFFER_NAME));
+
+
+        //TODO Implement callback  IPackacurrentBuffer =
 
         ShaderUtil.checkGLError(TAG, "Texture loading");
         return true;
@@ -226,7 +220,7 @@ public  class SpringOverlayRenderer  {
     /*Draw the new Recived Data
     TODO
     */
-    void redrawLastBuffer(Context context, View  view)  {
+    void redrawLastBuffer(Context context, ImageView view) {
         Paint paint = new Paint();
         //TODO Remov
 
@@ -237,30 +231,60 @@ public  class SpringOverlayRenderer  {
         drawIPAdress(canvas);
 
         //Attach the canvas to the ImageView
-        view.draw(canvas);
+
+        Paint myPaint = new Paint();
+        Bitmap tempBitmap = Bitmap.createBitmap(myBitmap.getWidth(), myBitmap.getHeight(), Bitmap.Config.RGB_565);
+        Canvas tempCanvas = new Canvas(tempBitmap);
+
+        //Draw the image bitmap into the canvas
+        tempCanvas.drawBitmap(myBitmap, 0, 0, null);
+
+        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
+        tempCanvas.drawRoundRect(new RectF(0, 128, 256, 512), 2, 2, myPaint);
+
+        //Attach the canvas to the ImageView
+        view.setImageDrawable(new BitmapDrawable(context.getResources(), tempBitmap));
+
 
     }
 
     void drawIPAdress(Canvas canvas) {
-        Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(20);
-        canvas.drawText("Ip-Address",canvas.getWidth()/2,canvas.getHeight()/2,paint);
-
+        if (!stillConnected) {
+            canvas.drawText("Ip-Address:" + comonUtils.getIPAddress(true), canvas.getWidth() / 2, canvas.getHeight() / 2, ipAdressPaint);
+        }
     }
 
     /*Draw the new Recived Data
     TODO
     */
-    void drawNewBuffer(Context context, View view) {
+    void drawNewBuffer(Context context, ImageView view) {
         Paint paint = new Paint();
         Canvas canvas = new Canvas(currentBuffer.createBitmap(width, heigth, Bitmap.Config.ARGB_8888));
         canvas.drawBitmap(currentBuffer, 0f, 0f, paint);
-       view.draw(canvas);
 
+        drawIPAdress(canvas);
+
+
+        Paint myPaint = new Paint();
+        Bitmap tempBitmap = Bitmap.createBitmap(myBitmap.getWidth(), myBitmap.getHeight(), Bitmap.Config.RGB_565);
+        Canvas tempCanvas = new Canvas(tempBitmap);
+
+        //Draw the image bitmap into the canvas
+        tempCanvas.drawBitmap(myBitmap, 0, 0, null);
+
+        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
+        tempCanvas.drawRoundRect(new RectF(0, 128, 256, 512), 2, 2, myPaint);
+        //Attach the canvas to the ImageView
+        view.setImageDrawable(new BitmapDrawable(context.getResources(), tempBitmap));
     }
 
 
+    @Override
+    public void callback(har[] serializedObjectc, int size) {
+        //TODO deserialize the object
+        currentBuffer = oldBuffer;
+
+    }
 }
 
 

@@ -16,6 +16,12 @@
 
 package com.google.ar.core.examples.java.helloar;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
+import android.media.Image;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -24,6 +30,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.ar.core.Anchor;
@@ -43,6 +51,7 @@ import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
 import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
 import com.google.ar.core.examples.java.common.helpers.SnackbarHelper;
 import com.google.ar.core.examples.java.common.helpers.TapHelper;
+import com.google.ar.core.examples.java.common.helpers.comonUtils;
 import com.google.ar.core.examples.java.common.rendering.BackgroundRenderer;
 
 import com.google.ar.core.examples.java.common.rendering.ObjectRenderer;
@@ -73,8 +82,6 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
 
     // Rendering. The Renderers are created here, and initialized when the GL surface is created.
     private GLSurfaceView surfaceView;
-    private View  overlayView;
-   private  ViewGroup.LayoutParams mOverlayViewParams;
 
     private boolean installRequested;
 
@@ -107,10 +114,6 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
         // Set up tap listener.
         tapHelper = new TapHelper(/*context=*/ this);
         surfaceView.setOnTouchListener(tapHelper);
-
-        overlayView = new View(this);
-        mOverlayViewParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        addContentView(overlayView, mOverlayViewParams );
 
         // Set up renderer.
         surfaceView.setPreserveEGLContextOnPause(true);
@@ -235,8 +238,6 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             pointCloudRenderer.createOnGlThread(/*context=*/ this);
 
 
-           // springOverlayRenderer.createOnGlThread(this, gl);
-
             virtualObject.createOnGlThread(/*context=*/ this, "models/springlogo.obj", "models/springlogo.png");
             virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
 
@@ -244,6 +245,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
                     /*context=*/ this, "models/springlogoshadow.obj", "models/springlogoshadow.png");
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
+
+            springOverlayRenderer.createOnGlThread(this, gl);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -377,8 +380,9 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             }
             //Spring Overlay Renderer
 
-           // springOverlayRenderer.update(this, camera, groundAnchor);
-          //  springOverlayRenderer.draw(this,gl, overlayView);
+
+            springOverlayRenderer.update(this, camera, groundAnchor);
+            springOverlayRenderer.draw(this,gl, (ImageView) findViewById(R.id.overlay));
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.

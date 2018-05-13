@@ -1,31 +1,37 @@
 package com.google.ar.core.examples.java.common.tcpClient;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.TextView;
 
-public class Server  {
+public class Server {
 
     private ServerSocket serverSocket;
-
+    IPackageRecivedCallback packageRecipient;
     Handler updateConversationHandler;
 
     Thread serverThread = null;
+    String pngSizeStartTokken = "SerializedSize:";
+    String pngSizeEndTokken = ";";
 
     private TextView text;
+    char[] deserialize;
 
     public static final int SERVERPORT = 647;
 
 
-    public void Server(Bundle savedInstanceState) {
-
+    public void Server(Bundle savedInstanceState, IPackageRecivedCallback packageRecipient) {
+        this.packageRecipient = packageRecipient;
 
         this.serverThread = new Thread(new ServerThread());
         this.serverThread.start();
@@ -42,6 +48,12 @@ public class Server  {
     }
 
     class ServerThread implements Runnable {
+        ServerThread() {
+
+        }
+
+        ;
+
 
         public void run() {
             Socket socket = null;
@@ -56,7 +68,7 @@ public class Server  {
 
                     socket = serverSocket.accept();
 
-                    CommunicationThread commThread = new CommunicationThread(socket);
+                    CommunicationThread commThread = new CommunicationThread(socket, packageRecipient);
                     new Thread(commThread).start();
 
                 } catch (IOException e) {
@@ -71,9 +83,10 @@ public class Server  {
         private Socket clientSocket;
 
         private BufferedReader input;
+        IPackageRecivedCallback packageRecipient;
 
-        public CommunicationThread(Socket clientSocket) {
-
+        public CommunicationThread(Socket clientSocket, IPackageRecivedCallback packageRecipient) {
+            this.packageRecipient = packageRecipient;
             this.clientSocket = clientSocket;
 
             try {
@@ -87,32 +100,35 @@ public class Server  {
 
         public void run() {
 
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) try {
 
-                try {
+                String read = input.readLine();
+                Log.d(this.getClass().getSimpleName(), read);
 
-                    String read = input.readLine();
+                if (read.contains(pngSizeStartTokken)) {
+                    int sizeOfPng = Integer.parseInt(read.substring(read.indexOf(pngSizeStartTokken) + pngSizeStartTokken.length(), read.indexOf(pngSizeEndTokken)));
 
-                    updateConversationHandler.post(new updateUIThread(read));
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    try {
+                        packageRecipient.callback(new BitmapFactory().decodeStream( this.clientSocket.getInputStream()));
+                    } catch (IOException ex) {
+                        System.out.println("Can't get socket input stream. ");
+                    }
+
+
+
+
+
                 }
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
+
     }
 
-    class updateUIThread implements Runnable {
-        private String msg;
 
-        public updateUIThread(String str) {
-            this.msg = str;
-        }
-
-        @Override
-        public void run() {
-            text.setText(text.getText().toString()+"Client Says: "+ msg + "\n");
-        }
-    }
 }
+
