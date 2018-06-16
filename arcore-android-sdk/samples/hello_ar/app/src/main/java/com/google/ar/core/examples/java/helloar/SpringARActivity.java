@@ -16,22 +16,15 @@
 
 package com.google.ar.core.examples.java.helloar;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+
 import android.widget.ImageView;
-import android.widget.TextView;
+
 import android.widget.Toast;
 
 import com.google.ar.core.Anchor;
@@ -43,6 +36,7 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Point;
 import com.google.ar.core.Point.OrientationMode;
 import com.google.ar.core.PointCloud;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
@@ -51,7 +45,6 @@ import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
 import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
 import com.google.ar.core.examples.java.common.helpers.SnackbarHelper;
 import com.google.ar.core.examples.java.common.helpers.TapHelper;
-import com.google.ar.core.examples.java.common.helpers.comonUtils;
 import com.google.ar.core.examples.java.common.rendering.BackgroundRenderer;
 
 import com.google.ar.core.examples.java.common.rendering.ObjectRenderer;
@@ -77,8 +70,8 @@ import javax.microedition.khronos.opengles.GL10;
  * ARCore API. The application will display any detected planes and will allow the user to tap on a
  * plane to place a 3d model of the Android robot.
  */
-public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
-    private static final String TAG = HelloArActivity.class.getSimpleName();
+public class SpringARActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
+    private static final String TAG = SpringARActivity.class.getSimpleName();
 
     // Rendering. The Renderers are created here, and initialized when the GL surface is created.
     private GLSurfaceView surfaceView;
@@ -96,7 +89,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
     private final PlaneRenderer planeRenderer = new PlaneRenderer();
     private final PointCloudRenderer pointCloudRenderer = new PointCloudRenderer();
     private final SpringOverlayRenderer springOverlayRenderer = new SpringOverlayRenderer();
-    Anchor groundAnchor;
+
+
 
     // Temporary matrix allocated here to reduce number of allocations for each frame.
     private final float[] anchorMatrix = new float[16];
@@ -212,6 +206,7 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
             Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
                     .show();
+
             if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
                 // Permission denied with checking "Do not ask again".
                 CameraPermissionHelper.launchPermissionSettings(this);
@@ -246,7 +241,7 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-            springOverlayRenderer.createOnGlThread(this, gl);
+           springOverlayRenderer.createOnGlThread(this, gl);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -278,7 +273,7 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
             // UpdateMode.BLOCKING (it is by default), this will throttle the rendering to the
             // camera framerate.
             Frame frame = session.update();
-            Camera camera = frame.getCamera();
+            camera = frame.getCamera();
 
             // Handle taps. Handling only one tap per frame, as taps are usually low frequency
             // compared to frame rate.
@@ -291,7 +286,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
                     // Creates an anchor if a plane or an oriented point was hit.
 
 
-                    if ((trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
+                    if (groundAnchor == null &&
+                        (trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
                             || (trackable instanceof Point
                             && ((Point) trackable).getOrientationMode()
                             == OrientationMode.ESTIMATED_SURFACE_NORMAL)) {

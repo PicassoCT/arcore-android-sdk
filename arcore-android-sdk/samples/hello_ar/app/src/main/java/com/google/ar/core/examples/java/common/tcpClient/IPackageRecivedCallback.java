@@ -2,6 +2,6 @@ package com.google.ar.core.examples.java.common.tcpClient;
 
 import android.graphics.Bitmap;
 
-interface IPackageRecivedCallback {
+public interface IPackageRecivedCallback {
     void callback(Bitmap bitmap );
 }

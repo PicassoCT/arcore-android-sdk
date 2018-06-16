@@ -9,8 +9,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.opengl.GLUtils;
+import android.opengl.*;
 import android.widget.ImageView;
+import android.util.Log;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
@@ -32,29 +33,27 @@ import java.util.stream.Stream;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class SpringOverlayRenderer implements IPackageRecivedCallback  {
-
-    Collection<Anchor> Anchors;
+public class SpringOverlayRenderer implements IPackageRecivedCallback {//  {
+    public Anchor groundAnchor;
+    public Camera camera;
     Pose MapCenterPose;
-    Pose cameraPose;
+    Pose CameraPose;
 
 
     public boolean stillConnected = false;
+    //Headers
 
-    int width;
-    int heigth;
-    Server tcpConnection;
+
+   // Server tcpConnection;
     Paint ipAdressPaint = new Paint();
-
+    Server tcpConnection;
     //Shader Variables
-    Bitmap oldBuffer;
-    Bitmap currentBuffer;
-    public Bitmap myBitmap;
-    private int[] textures;
+    //Buffers
 
-    private static final String TAG = SpringOverlayRenderer.class.getSimpleName();
 
-    private static final String OVERLAY_BUFFER_NAME = "drawable/ic_launcher.png";
+    private static final String tag = SpringOverlayRenderer.class.getSimpleName();
+
+    private static final String OVERLAY_BUFFER_PATH = "assets/models/springoverlayraw.png";
 
 
     private static final float[] VERTEX_COORDINATES = new float[]{
@@ -81,28 +80,23 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
 
         width = Resources.getSystem().getDisplayMetrics().widthPixels;
         heigth = Resources.getSystem().getDisplayMetrics().heightPixels;
-        currentBuffer = BitmapFactory.decodeStream(context.getAssets().open(OVERLAY_BUFFER_NAME));
+        //Load the placeholder texture
 
-        textures = new int[1];
-        gl.glEnable(GL10.GL_TEXTURE_2D);
-        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
-        gl.glGenTextures(1, textures, 0);
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+    /*
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, World.SCREEN_WIDTH, World.SCREEN_HEIGHT, 0, 1, -1);
+    glMatrixMode(GL_MODELVIEW);
+    glEnable(GL_TEXTURE_2D);
 
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
-
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, currentBuffer, 0);
+*/
     }
 
 
     /*Constructor*/
     void SpringOverlayRenderer() {
-        tcpConnection = new Server();
+           tcpConnection = new Server();
     }
 
 
@@ -129,6 +123,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
 
     /*updates the Data*/
     public void update(Context context, Camera camera, Anchor groundAnchor) {
+        Log.e(tag, "Spring OverlayRender Update called");
 
         stillConnected = checkConnection();
         if (stillConnected && groundAnchor != null) {
@@ -147,28 +142,33 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
             stillConnected = sendDataToSpring(cameraPose, MapCenterPose);
         }
 
-        ;
     }
 
     /*Draw the buffer
      */
     public void draw(Context context, GL10 gl, ImageView view) {
-        gl.glActiveTexture(GL10.GL_TEXTURE0);
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 
-        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, VERTEX_BUFFER);
-        gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, TEXCOORD_BUFFER);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
+        Log.e(tag, "Spring OverlayRender draw called");
+/*
+    overlay = TextureLoader.getTexture("PNG", new FileInputStream(new File(OVERLAY_BUFFER_PATH)));
 
-        if (!stillConnected) {
-            //On timeout draw last completed picture
-            redrawLastBuffer(context, view);
-        } else {
-            //Draw Frame over stored picture
-            drawNewBuffer(context, view);
-        }
+    glBindTexture(GL_TEXTURE_2D, overlay.getTextureID());
+    glPushMatrix();
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0);
+    glVertex2f(0, 0); // Upper left
 
+    glTexCoord2f(1, 0);
+    glVertex2f(World.SCREEN_WIDTH, 0); // Upper right
 
+    glTexCoord2f(1, 1);
+    glVertex2f(World.SCREEN_WIDTH, World.SCREEN_HEIGHT); // Lower right
+
+    glTexCoord2f(0, 1);
+    glVertex2f(0, World.SCREEN_HEIGHT); // Lower left
+    glEnd();
+    glPopMatrix();
+*/
     }
 
 
@@ -211,9 +211,8 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
         //store the formerly newBuffer in the oldBuffer
 
 
-        //TODO Implement callback  IPackacurrentBuffer =
 
-        ShaderUtil.checkGLError(TAG, "Texture loading");
+        ShaderUtil.checkGLError(tag, "Texture loading");
         return true;
     }
 
@@ -222,7 +221,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
     */
     void redrawLastBuffer(Context context, ImageView view) {
         Paint paint = new Paint();
-        //TODO Remov
+        //TODO Remove
 
         //oldBuffer.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888)
         Canvas canvas = new Canvas();
@@ -278,13 +277,11 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback  {
         view.setImageDrawable(new BitmapDrawable(context.getResources(), tempBitmap));
     }
 
-
     @Override
-    public void callback(har[] serializedObjectc, int size) {
-        //TODO deserialize the object
-        currentBuffer = oldBuffer;
+    public void callback(Bitmap bitmap) {
 
     }
+
 }
 
 
