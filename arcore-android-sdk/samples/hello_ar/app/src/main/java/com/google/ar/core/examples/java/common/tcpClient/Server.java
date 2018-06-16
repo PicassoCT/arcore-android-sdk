@@ -19,13 +19,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.ar.core.Anchor;
+import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.examples.java.common.rendering.SpringOverlayRenderer;
 import com.google.ar.core.examples.java.helloar.SpringARActivity;
 
 public class Server {
     public static final int SERVERPORT = 8090 ;
-
     private ServerSocket serverSocket;
     IPackageRecivedCallback packageRecipient;
 
@@ -35,8 +36,10 @@ public class Server {
     static String recieveDataHeader = "SPRINGARSND;DATA=";
     static String recieveResetHeader = "SPRINGAR;RESET;";
     static String seperator = ";";
-    TwinBuffer Buffer;
+    public TwinBuffer Buffer;
 
+    private Pose groundAnchorPose;
+    private Pose cameraPose;
 
 
     int messageCounter; //Zählt die Anzahl der erhaltenen Messages
@@ -81,6 +84,11 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void updateCam_GroundAnchor(Pose camera, Pose groundAnchor) {
+        cameraPose = camera;
+        groundAnchorPose = groundAnchor;
     }
 
     class ServerThread implements Runnable {
@@ -128,14 +136,9 @@ public class Server {
                      this.output = new BufferedWriter(new OutputStreamWriter(this.clientSocket.getOutputStream(),
                                                                             formConfigurationMessage()));
                 else {
-                    SpringARActivity myActivity = getClass(SpringARActivity);
-                            );
                     this.output = new BufferedWriter(new OutputStreamWriter(this.clientSocket.getOutputStream(),
-                            formCamMatriceMessage(
-
-                                    SpringOverlayRenderer.Ca(),
-                                    myActivity.getGroundAnchorPos()
-                            )));
+                            formCamMatriceMessage( cameraPose, groundAnchorPose)
+                            ));
                 }
             }  catch (IOException e) {
                 e.printStackTrace();

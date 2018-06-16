@@ -7,7 +7,7 @@ public class TwinBuffer {
     private int drawIndex = 1;
     private int writeIndex = 0;
 
-    Bitmap getDrawBuffer(){return Buffers[drawIndex];};
+   public Bitmap getDrawBuffer(){return Buffers[drawIndex];};
 
     Bitmap getWriteBuffer(){ return Buffers[writeIndex];};
 

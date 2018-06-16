@@ -97,6 +97,8 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
     // Anchors created from taps used for object placing.
     private final ArrayList<Anchor> anchors = new ArrayList<>();
+    private Anchor groundAnchor;
+    private Camera camera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,6 +119,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         installRequested = false;
+        springOverlayRenderer.update(this, camera, groundAnchor);
     }
 
     @Override
@@ -241,7 +244,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-           springOverlayRenderer.createOnGlThread(this, gl);
+           springOverlayRenderer.createOnGlThread(gl);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -274,7 +277,6 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             // camera framerate.
             Frame frame = session.update();
             camera = frame.getCamera();
-
             // Handle taps. Handling only one tap per frame, as taps are usually low frequency
             // compared to frame rate.
 
@@ -315,6 +317,10 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             // If not tracking, don't draw 3d objects.
             if (camera.getTrackingState() == TrackingState.PAUSED) {
                 return;
+            }
+            //update the tcpServersData to send
+            if (camera != null && groundAnchor != null) {
+                springOverlayRenderer.update(this,camera,groundAnchor);
             }
 
             // Get projection matrix.
