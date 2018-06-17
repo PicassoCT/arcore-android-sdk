@@ -119,7 +119,6 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         installRequested = false;
-        springOverlayRenderer.update(this, camera, groundAnchor);
     }
 
     @Override
@@ -318,10 +317,6 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             if (camera.getTrackingState() == TrackingState.PAUSED) {
                 return;
             }
-            //update the tcpServersData to send
-            if (camera != null && groundAnchor != null) {
-                springOverlayRenderer.update(this,camera,groundAnchor);
-            }
 
             // Get projection matrix.
             float[] projmtx = new float[16];
@@ -384,7 +379,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
 
             springOverlayRenderer.update(this, camera, groundAnchor);
-            springOverlayRenderer.draw(this,gl, (ImageView) findViewById(R.id.overlay));
+            springOverlayRenderer.draw(this ,gl, (ImageView) findViewById(R.id.overlay));
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.

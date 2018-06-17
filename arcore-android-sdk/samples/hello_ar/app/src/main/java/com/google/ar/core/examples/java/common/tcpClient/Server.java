@@ -43,6 +43,8 @@ public class Server {
 
 
     int messageCounter; //Zählt die Anzahl der erhaltenen Messages
+    public boolean stillConnected;
+
     private void resetAllMessages(String Message) {
         if (Message.indexOf(recieveResetHeader) != 0)
          messageCounter = 0;
@@ -166,6 +168,7 @@ public class Server {
                     if (read.contains(recieveDataHeader)) {
                         read.replace(recieveDataHeader,"");
                         Bitmap refToWriteBuffer = Buffer.getWriteBuffer();
+                        //noinspection UnusedAssignment
                         refToWriteBuffer = new BitmapFactory().decodeStream( this.clientSocket.getInputStream());
                         Buffer.switchBuffer();
                         packageRecipient.callback( Buffer.getDrawBuffer());
