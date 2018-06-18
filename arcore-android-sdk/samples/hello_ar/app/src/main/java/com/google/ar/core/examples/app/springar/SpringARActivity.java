@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ar.core.examples.java.helloar;
+package com.google.ar.core.examples.app.springar;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -37,18 +37,18 @@ import com.google.ar.core.PointCloud;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
-import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
-import com.google.ar.core.examples.java.common.helpers.SnackbarHelper;
-import com.google.ar.core.examples.java.common.helpers.TapHelper;
-import com.google.ar.core.examples.java.common.rendering.BackgroundRenderer;
+import com.google.ar.core.examples.app.common.helpers.CameraPermissionHelper;
+import com.google.ar.core.examples.app.common.helpers.DisplayRotationHelper;
+import com.google.ar.core.examples.app.common.helpers.FullScreenHelper;
+import com.google.ar.core.examples.app.common.helpers.SnackbarHelper;
+import com.google.ar.core.examples.app.common.helpers.TapHelper;
+import com.google.ar.core.examples.app.common.rendering.BackgroundRenderer;
 
-import com.google.ar.core.examples.java.common.rendering.ObjectRenderer;
-import com.google.ar.core.examples.java.common.rendering.ObjectRenderer.BlendMode;
-import com.google.ar.core.examples.java.common.rendering.PlaneRenderer;
-import com.google.ar.core.examples.java.common.rendering.PointCloudRenderer;
-import com.google.ar.core.examples.java.common.rendering.SpringOverlayRenderer;
+import com.google.ar.core.examples.app.common.rendering.ObjectRenderer;
+import com.google.ar.core.examples.app.common.rendering.ObjectRenderer.BlendMode;
+import com.google.ar.core.examples.app.common.rendering.PlaneRenderer;
+import com.google.ar.core.examples.app.common.rendering.PointCloudRenderer;
+import com.google.ar.core.examples.app.common.rendering.SpringOverlayRenderer;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
@@ -376,7 +376,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
 
             springOverlayRenderer.update(camera, groundAnchor);
-            springOverlayRenderer.drawOverlay( session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
+            springOverlayRenderer.drawOverlay( camera.getDisplayOrientedPose(), projmtx);
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.

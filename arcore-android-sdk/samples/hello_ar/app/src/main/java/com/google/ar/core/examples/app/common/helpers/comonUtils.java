@@ -1,6 +1,6 @@
 
 
-package com.google.ar.core.examples.java.common.helpers;
+package com.google.ar.core.examples.app.common.helpers;
 
 import java.io.*;
 import java.net.*;

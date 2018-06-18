@@ -1,4 +1,4 @@
-package com.google.ar.core.examples.java.common.tcpClient;
+package com.google.ar.core.examples.app.common.tcpClient;
 
 
 public class Constants {

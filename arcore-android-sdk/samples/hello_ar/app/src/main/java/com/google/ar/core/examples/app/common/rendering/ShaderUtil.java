@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.core.examples.java.common.rendering;
+package com.google.ar.core.examples.app.common.rendering;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -51,6 +51,7 @@ public class ShaderUtil {
 
     if (shader == 0) {
       throw new RuntimeException("Error creating shader.");
+
     }
 
     return shader;

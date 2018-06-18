@@ -27,5 +27,5 @@ void main() {
   vec3 color = (control.r * dotScale > u_gridControl.x) ? u_dotColor.rgb
              : (control.g > u_gridControl.y)            ? u_lineColor.rgb * lineFade
                                                         : (u_lineColor.rgb * 0.25 * lineFade) ;
-  gl_FragColor = control;
+  gl_FragColor = vec4(color, v_TexCoordAlpha.z * u_gridControl.w);
 }

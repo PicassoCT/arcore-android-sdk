@@ -1,29 +1,21 @@
-package com.google.ar.core.examples.java.common.tcpClient;
+package com.google.ar.core.examples.app.common.tcpClient;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 
-import com.google.ar.core.Anchor;
-import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
-import com.google.ar.core.examples.java.common.rendering.SpringOverlayRenderer;
-import com.google.ar.core.examples.java.helloar.SpringARActivity;
 
 public class Server {
     public static final int SERVERPORT = 8090 ;

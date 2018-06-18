@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.google.ar.core.examples.java.common.helpers;
+package com.google.ar.core.examples.app.common.helpers;
 import android.os.Handler;
 
 public class DelayUtils {
