@@ -13,13 +13,16 @@
  * limitations under the License.
  */
 
-attribute vec4 a_Position;
-attribute vec2 a_TexCoord;
+uniform mat4 u_Model;
+uniform mat4 u_ModelViewProjection;
+uniform mat4 u_texturecoordinates;
 
-varying vec2 v_TexCoords;
+attribute vec3 a_XZPositionAlpha; // (x, z, alpha)
 
-void main()
-{
-v_TexCoords = a_TexCoord;
-gl_Position = a_Position;
-};
+varying vec3 v_TexCoordAlpha;
+
+void main() {
+   vec4 position = vec4(a_XZPositionAlpha.x, 0.0, a_XZPositionAlpha.y, 1.0);
+   v_TexCoordAlpha = vec3(u_texturecoordinates * (u_Model * position).xz, a_XZPositionAlpha.z);
+   gl_Position = u_ModelViewProjection * position;
+}

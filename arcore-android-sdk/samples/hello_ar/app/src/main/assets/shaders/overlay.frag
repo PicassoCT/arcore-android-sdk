@@ -13,14 +13,12 @@
  * limitations under the License.
  */
 
-precision mediump float;
-
+precision highp float;
 uniform sampler2D u_Texture;
-
-varying vec2 v_TexCoord;
-
+varying vec3 v_TexCoordAlpha;
 
 void main()
 {
-gl_FragColor = texture2D(u_Texture, v_TexCoord);
+gl_FragColor =  texture2D(u_Texture, v_TexCoordAlpha.xy);
+
 }

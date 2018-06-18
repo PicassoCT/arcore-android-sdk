@@ -23,8 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import android.widget.ImageView;
-
 import android.widget.Toast;
 
 import com.google.ar.core.Anchor;
@@ -36,7 +34,6 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Point;
 import com.google.ar.core.Point.OrientationMode;
 import com.google.ar.core.PointCloud;
-import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
@@ -243,7 +240,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-           springOverlayRenderer.createOnGlThread(gl);
+           springOverlayRenderer.createOnGlThread(this, gl);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -378,8 +375,8 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             //Spring Overlay Renderer
 
 
-            springOverlayRenderer.update(this, camera, groundAnchor);
-            springOverlayRenderer.draw(this ,gl, (ImageView) findViewById(R.id.overlay));
+            springOverlayRenderer.update(camera, groundAnchor);
+            springOverlayRenderer.drawOverlay( session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
