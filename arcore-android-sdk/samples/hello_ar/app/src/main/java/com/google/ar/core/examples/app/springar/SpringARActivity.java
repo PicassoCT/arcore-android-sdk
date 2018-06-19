@@ -240,7 +240,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-           springOverlayRenderer.createOnGlThread(this, gl);
+           springOverlayRenderer.createOnGlThread(this);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);

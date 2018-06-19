@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-        //    uniform mat4 u_Model;
-         //   uniform mat4 u_ModelViewProjection;
-       //varying vec3 v_TexCoordAlpha;
 
-      attribute vec4 vPosition;
+    unfirom mat4 uMVPMatrix;
+    attribute vec4 vPostion;
+    attribute vec2 TexCoordIn;
+    varying vec2 TexCoordOut;
 
       void main() {
-         gl_Position = vPosition;
+            gl_Position = uMVPMastrix * vPostion;
+            TexCoordOut = TexCoordIn;
         }

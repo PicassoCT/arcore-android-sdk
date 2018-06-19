@@ -14,12 +14,11 @@
  */
 
 precision highp float;
-//uniform sampler2D u_Texture;
-//varying vec3 v_TexCoordAlpha;
+    uniform vec4 vColor;
+    uniform sampler2D TexCoordIn;
+    varying vec2 TexCoordOut;
 
-
-         void main() {
-           gl_FragColor = vec4(0.5, 1.0, 1.0, 0.0); // texture2D(u_Texture, v_TexCoordAlpha.xy)
-         }
-
-
+    void main() {
+        gl_FragColor = texture2D( TexCoordIn, vec2 (TexCoordOut.x, TexCoordOut.y));
+        gl_FragColor = vec4(1.0,0.0,0.0,0.5);
+    }

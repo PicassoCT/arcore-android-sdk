@@ -16,9 +16,11 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.ar.core.Pose;
+import com.google.ar.core.examples.app.springar.SpringARActivity;
 
 public class Server {
     public static final int SERVERPORT = 8090 ;
+    private static final String TAG = Server.class.getSimpleName();
     private ServerSocket serverSocket;
     IPackageRecivedCallback packageRecipient;
 
@@ -28,7 +30,7 @@ public class Server {
     static String recieveDataHeader = "SPRINGARSND;DATA=";
     static String recieveResetHeader = "SPRINGAR;RESET;";
     static String seperator = ";";
-    public TwinBuffer Buffer;
+    public TwinBuffer Buffer = new TwinBuffer();
 
     private Pose groundAnchorPose;
     private Pose cameraPose;
@@ -43,6 +45,8 @@ public class Server {
     }
 
     private String formConfigurationMessage() {
+
+        Log.e(TAG, "Server formCingurationMessage called");
         String message = "";
 
         message = sendCFGHeader +
@@ -54,6 +58,7 @@ public class Server {
     }
 
     private String formCamMatriceMessage(Pose camPose, Pose anchorPose) {
+        Log.e(TAG, "Server formCamMatriceMessage called");
         String message = sendCAMHeader;
         float  mat4_4[] = new float[16];
         camPose.toMatrix(mat4_4, 0);
