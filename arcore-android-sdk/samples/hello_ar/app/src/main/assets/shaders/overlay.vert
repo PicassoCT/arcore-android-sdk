@@ -14,12 +14,12 @@
  */
 
 
-    unfirom mat4 uMVPMatrix;
+    uniform mat4 uMVPMatrix;
     attribute vec4 vPostion;
     attribute vec2 TexCoordIn;
     varying vec2 TexCoordOut;
 
       void main() {
-            gl_Position = uMVPMastrix * vPostion;
+            gl_Position = uMVPMatrix * vPostion;
             TexCoordOut = TexCoordIn;
         }

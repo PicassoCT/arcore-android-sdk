@@ -30,10 +30,11 @@ public class Server {
     static String recieveDataHeader = "SPRINGARSND;DATA=";
     static String recieveResetHeader = "SPRINGAR;RESET;";
     static String seperator = ";";
-    public TwinBuffer Buffer = new TwinBuffer();
+    public TwinBuffer Buffer = new TwinBuffer(this);
 
     private Pose groundAnchorPose;
     private Pose cameraPose;
+
 
 
     int messageCounter; //Zählt die Anzahl der erhaltenen Messages
@@ -70,7 +71,8 @@ public class Server {
     return message;
     }
 
-    public void Server(Bundle savedInstanceState, IPackageRecivedCallback packageRecipient) {
+    public  Server( IPackageRecivedCallback packageRecipient) {
+
         this.packageRecipient = packageRecipient;
 
         this.serverThread = new Thread(new ServerThread());

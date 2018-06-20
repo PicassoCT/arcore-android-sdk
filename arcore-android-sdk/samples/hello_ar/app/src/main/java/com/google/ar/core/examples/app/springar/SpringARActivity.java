@@ -88,7 +88,6 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
     private final SpringOverlayRenderer springOverlayRenderer = new SpringOverlayRenderer();
 
 
-
     // Temporary matrix allocated here to reduce number of allocations for each frame.
     private final float[] anchorMatrix = new float[16];
 
@@ -240,7 +239,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             virtualObjectShadow.setBlendMode(BlendMode.Shadow);
             virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-           springOverlayRenderer.createOnGlThread(this);
+            springOverlayRenderer.createOnGlThread(this);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -285,7 +284,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
 
                     if (groundAnchor == null &&
-                        (trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
+                            (trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
                             || (trackable instanceof Point
                             && ((Point) trackable).getOrientationMode()
                             == OrientationMode.ESTIMATED_SURFACE_NORMAL)) {
@@ -376,7 +375,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
 
             springOverlayRenderer.update(camera, groundAnchor);
-            springOverlayRenderer.drawOverlay( camera.getDisplayOrientedPose(), projmtx);
+            springOverlayRenderer.drawOverlay(viewmtx,  projmtx);
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.

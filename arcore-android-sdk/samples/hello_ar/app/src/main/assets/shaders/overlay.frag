@@ -20,5 +20,5 @@ precision highp float;
 
     void main() {
         gl_FragColor = texture2D( TexCoordIn, vec2 (TexCoordOut.x, TexCoordOut.y));
-        gl_FragColor = vec4(1.0,0.0,0.0,0.5);
+        gl_FragColor = vec4(1.0,0.0,0.0,1.0);
     }
