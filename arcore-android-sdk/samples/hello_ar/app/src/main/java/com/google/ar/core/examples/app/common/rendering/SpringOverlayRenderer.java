@@ -224,7 +224,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, cameraPerspective, 0);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
-                indices.length,
+                drawListBuffer.limit(),
                 GLES20.GL_UNSIGNED_SHORT,
                 drawListBuffer);
 
