@@ -17,6 +17,7 @@ import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.app.common.tcpClient.*;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
+import com.google.ar.core.examples.app.springar.R;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,7 +29,7 @@ import java.nio.ShortBuffer;
 
 public class SpringOverlayRenderer implements IPackageRecivedCallback {
     static final int COORDS_PER_VERTEX = 3;
-    static final int COORDS_PER_TEXTURE = 2;
+    static final int COORDS_PER_TEXTURE = 2*4;
     //Shader Variables
     //Buffers
     private static final String VERTEX_SHADER_NAME = "shaders/overlay.vert";
@@ -48,7 +49,12 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private final int vertexStride = COORDS_PER_VERTEX * 4;
     private final int textureStride = COORDS_PER_VERTEX * 4;
     private final int vertexCount = texture.length / COORDS_PER_VERTEX;
-    private final byte indices[] = {0, 1, 2, 0, 2, 3};
+    private final short [] drawOrder = new short[]{0, 1, 2, 0, 2, 3};
+    // initialize byte buffer for the draw list
+    ByteBuffer dlb;
+
+
+
     // Server tcpConnection;
     Server tcpConnection = null;
     Context context;
@@ -60,18 +66,15 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private ByteBuffer indexBuffer;
     private ShortBuffer drawListBuffer;
     private int overlayProgram;
-    private int mPositionHandle;
-    private int mMVPMatrixHandle;
+     int mPositionHandle;
+     int mMVPMatrixHandle;
+     int textureHandleIn;
+     int textureHandleOut;
 
 
     private void bindTexture(int textureID, Context context, Bitmap bitmap) {
         Log.d(TAG, "Spring OverlayRender bindTexture called");
              /*// Read the texture.
-
-
-
-
-
 
 
     ShaderUtil.checkGLError(TAG, "Texture loading");*/
@@ -125,11 +128,14 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         textureBuffer.put(texture);
         textureBuffer.position(0);
 
-        ByteBuffer indexBuffer = ByteBuffer.allocateDirect(indices.length);
-        indexBuffer.put(indices);
-        indexBuffer.order(ByteOrder.nativeOrder());
-        drawListBuffer = indexBuffer.asShortBuffer();
-        drawListBuffer.position(0);
+        dlb= ByteBuffer.allocateDirect (
+                // (# of coordinate values * 2 bytes per short)
+                drawOrder.length * 2);
+        dlb.order (ByteOrder.nativeOrder ());
+        drawListBuffer = dlb.asShortBuffer ();
+        drawListBuffer.put (drawOrder);
+        drawListBuffer.position (0);
+
 
         try {
             vertexShader =
@@ -191,40 +197,45 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
      * Draws the collection of tracked planes, with closer planes hiding more distant ones.
      *
      * @param cameraView        The pose of the camera, as returned by {@link Camera#getPose()}
-     * @param cameraPerspective The projection matrix, as returned by {@link
+     * @param projMat The projection matrix, as returned by {@link
      *                          Camera#getProjectionMatrix(float[], int, float, float)}
      */
-    public void drawOverlay(float[] cameraView, float[] cameraPerspective) {
+    public void drawOverlay(float[] cameraView, float[] projMat) {
         Log.d(TAG, "Spring OverlayRender drawOverlay called");
 
         GLES20.glUseProgram(overlayProgram);
 
+
+
         mPositionHandle = GLES20.glGetAttribLocation(overlayProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-        int vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram, "TexCoordIn");
         GLES20.glVertexAttribPointer(mPositionHandle,
                 COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT,
                 false,
                 vertexStride,
                 vertexBuffer);
-        GLES20.glVertexAttribPointer(vsTextureCoord,
+
+        textureHandleIn = GLES20.glGetAttribLocation(overlayProgram, "TexCoordIn");
+        GLES20.glVertexAttribPointer(textureHandleIn,
                 COORDS_PER_TEXTURE,
                 GLES20.GL_FLOAT,
                 false,
                 textureStride,
                 textureBuffer);
-
-        GLES20.glEnableVertexAttribArray(vsTextureCoord);
+        GLES20.glEnableVertexAttribArray(textureHandleIn);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        int fsTexture = GLES20.glGetUniformLocation(overlayProgram, "TexCoordOut");
-        GLES20.glUniform1i(fsTexture, 0);
+
+        textureHandleOut = GLES20.glGetUniformLocation(overlayProgram, "TexCoordOut");
+        GLES20.glUniform1i(textureHandleOut, 0);
+
         mMVPMatrixHandle = GLES20.glGetUniformLocation(overlayProgram, "uMVPMatrix");
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, cameraPerspective, 0);
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, cameraView, 0);
+        ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
-                drawListBuffer.limit(),
+                drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT,
                 drawListBuffer);
 
@@ -257,10 +268,24 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     @Override
     public void callback(Bitmap bitmap) {
-        bindTexture(0, context, bitmap);
-        //any postprocessing of the buffer happens in here
-    }
+        //Necessary to avoid  ConcurrentModification error,
+        // which means you are trying to access the rendering pipeline from a different thread
+        // than the OpenGL is rendered on.
 
+        /*
+        * glSurfaceView.queueEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGLRenderer.AddFigure(1f, 1f, 1f);
+                    }
+                });
+        *
+        * */
+
+
+                  bindTexture(0, context, bitmap);
+
+    }
 }
 
 
