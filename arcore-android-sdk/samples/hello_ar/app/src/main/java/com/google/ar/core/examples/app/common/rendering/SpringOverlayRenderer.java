@@ -59,17 +59,17 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             1.0f, 1.0f,
     };
     private FloatBuffer textureBuffer;
-    private final int textureStride = COORDS_PER_VERTEX * 4;
+    private final int textureStride = COORDS_PER_VERTEX * 2;
 
     //Vertex data
     //Number of Floats per Vertex in the ByteBuffer
-    static final int COORDS_PER_VERTEX = 3;
+    static final int COORDS_PER_VERTEX = 4;
     private FloatBuffer vertexBuffer;
     static float vertices[] = {   // in counterclockwise order:
-            -1.0f, 1.0f, 0.0f,
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f,1.0f,
+            -1.0f, -1.0f, 0.0f,1.0f,
+            1.0f, -1.0f, 0.0f,1.0f,
+            1.0f, 1.0f, 0.0f,1.0f,
     };
     private final short [] drawOrder = new short[]{0, 1, 2, 2, 3, 0};
     private ShortBuffer drawListBuffer;
