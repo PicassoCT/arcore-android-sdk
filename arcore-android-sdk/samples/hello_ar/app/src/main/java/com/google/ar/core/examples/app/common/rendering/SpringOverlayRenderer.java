@@ -74,7 +74,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private final short [] drawOrder = new short[]{0, 1, 2, 2, 3, 0};
     private ShortBuffer drawListBuffer;
     ByteBuffer dlb;
-    private final int vertexStride = COORDS_PER_VERTEX * 3;
+    private final int vertexStride = COORDS_PER_VERTEX * 4;
     private final int vertexCount = vertices.length / COORDS_PER_VERTEX;
 
 
@@ -226,11 +226,11 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glUniform1i(uTextureHandle, 0);
 
         // set the viewport and a fixed, white background
+*/
 
         // since we're using a PNG file with transparency, enable alpha blending.
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glEnable(GLES20.GL_BLEND);
-*/
 
         ShaderUtil.checkGLError(TAG, "Program parameters");
 

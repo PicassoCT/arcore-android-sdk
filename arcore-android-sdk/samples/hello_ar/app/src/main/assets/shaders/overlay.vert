@@ -20,6 +20,6 @@
     varying vec2 TexCoordOut;
 
       void main() {
-            gl_Position = uMVPMatrix * vPosition  ;
+            gl_Position =  vPosition  ;
          //   TexCoordOut = uTexture;
         }
