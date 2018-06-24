@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,7 +31,7 @@ public class Server {
     static String recieveDataHeader = "SPRINGARSND;DATA=";
     static String recieveResetHeader = "SPRINGAR;RESET;";
     static String seperator = ";";
-    public TwinBuffer Buffer = new TwinBuffer(this);
+    public TwinBuffer Buffer;
 
     private Pose groundAnchorPose;
     private Pose cameraPose;
@@ -71,8 +72,8 @@ public class Server {
     return message;
     }
 
-    public  Server( IPackageRecivedCallback packageRecipient) {
-
+    public  Server(Context context, IPackageRecivedCallback packageRecipient) {
+      Buffer=  new TwinBuffer(context, this);
         this.packageRecipient = packageRecipient;
 
         this.serverThread = new Thread(new ServerThread());

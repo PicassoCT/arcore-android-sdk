@@ -12,12 +12,14 @@ public class TwinBuffer {
     final String TAG = getClass().getSimpleName();
     private Server myConnection;
 
-    public  TwinBuffer(Server tcpConnection) {
+    public  TwinBuffer(Context context, Server tcpConnection) {
 
         myConnection = tcpConnection;
-        Buffers[0] = BitmapFactory.decodeFile("/mipmap-mdpi/springoverlayraw.png");
-        Buffers[1] = BitmapFactory.decodeFile("/mipmap-mdpi/springoverlayraw.png");
-    }
+        try {
+            Buffers[0] = BitmapFactory.decodeStream(context.getAssets().open("models/trigrid.png"));
+            Buffers[1] = BitmapFactory.decodeStream(context.getAssets().open("models/trigrid.png"));
+        }catch (IOException i){}
+        }
 
     public Bitmap Buffers[] = new Bitmap[2];
 

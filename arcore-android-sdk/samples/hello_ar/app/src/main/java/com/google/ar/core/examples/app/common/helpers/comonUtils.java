@@ -2,6 +2,11 @@
 
 package com.google.ar.core.examples.app.common.helpers;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
