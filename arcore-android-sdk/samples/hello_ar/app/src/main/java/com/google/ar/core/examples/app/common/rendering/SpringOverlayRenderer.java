@@ -1,7 +1,6 @@
 
 package com.google.ar.core.examples.app.common.rendering;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,7 +17,6 @@ import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.app.common.tcpClient.*;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
-import com.google.ar.core.examples.app.springar.R;
 
 
 import java.io.IOException;
@@ -26,8 +24,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-
-import javax.microedition.khronos.opengles.GL10;
 
 // Draws the Spring Overlay as a Texture
 public class SpringOverlayRenderer implements IPackageRecivedCallback {
@@ -51,31 +47,35 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     Context context;
 
     //Texture data
-    private int[] textures = new int[2];
-    private static final float[] texture = new float[]{
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
+    private int[] textures = new int[1];
+    private static final float[] uvwTex = new float[]{
             1.0f, 1.0f,
+           -1.0f, 0.0f,
+            0.0f, -1.0f,
+            1.0f, -1.0f,
     };
-    private FloatBuffer textureBuffer;
-    private final int textureStride = COORDS_PER_VERTEX * 2;
+    private FloatBuffer uvwTexBuffer;
+    private final int textureStride = COORDS_PER_VERTEX * 4;
+    private int vsTextureCoord;
+    private int COORDS_PER_TEXTURE = 2;
 
     //Vertex data
     //Number of Floats per Vertex in the ByteBuffer
     static final int COORDS_PER_VERTEX = 4;
     private FloatBuffer vertexBuffer;
     static float vertices[] = {   // in counterclockwise order:
-            -1.0f, 1.0f, 0.0f,1.0f,
-            -1.0f, -1.0f, 0.0f,1.0f,
+            -1.00f, 1.00f, 0.0f,1.0f,
+            -1.00f, -1.0f, 0.0f,1.0f,
             1.0f, -1.0f, 0.0f,1.0f,
             1.0f, 1.0f, 0.0f,1.0f,
     };
+
     private final short [] drawOrder = new short[]{0, 1, 2, 2, 3, 0};
     private ShortBuffer drawListBuffer;
     ByteBuffer dlb;
     private final int vertexStride = COORDS_PER_VERTEX * 4;
     private final int vertexCount = vertices.length / COORDS_PER_VERTEX;
+
 
 
     //Takes a loaded bitmap from a callback,
@@ -94,7 +94,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glGenTextures(textures.length, textures, 0);
         if (textures[0] == GLES20.GL_FALSE)
-            throw new RuntimeException("Error loading texture");
+            throw new RuntimeException("Error loading uvwTex");
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
         GLES20.glTexParameteri(
@@ -117,26 +117,33 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
     public void drawFirstTimeLogo(Context context) {
-        // first, try to generate a texture handle
-        GLES20.glGenTextures(1, textures, 0);
-
-        if (textures[0] == GLES20.GL_FALSE)
-            throw new RuntimeException("Error loading texture");
-
-        // bind the texture and set parameters
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-
-        //Load first instance of the spring overlay
-        //Bitmap b = BitmapFactory.decodeResource(context.getResources(),R.drawable.springoverlayraw);
+        // first, try to generate a uvwTex handle
+        android.graphics.Matrix flip = new android.graphics.Matrix();
+        flip.postScale(-1f,-1f);
         Bitmap b = null;
         try {
-            b = BitmapFactory.decodeStream( context.getAssets().open("models/trigrid.png"));
+            b = BitmapFactory.decodeStream( context.getAssets().open("models/springoverlayraw.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        GLES20.glGenTextures(textures.length, textures, 0);
+
+        if (textures[0] == GLES20.GL_FALSE)
+            throw new RuntimeException("Error loading uvwTex");
+
+        // bind the uvwTex and set parameters
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
+        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        //Load first instance of the spring overlay
+        // since we're using a PNG file with transparency, enable alpha blending.
+
         b.recycle();
     }
 
@@ -144,13 +151,11 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     // On Surface created
     public void createOnGlThread(Context context) throws IOException {
         //tearDown();
-       // drawFirstTimeLogo(context);
+
 
         Log.d(TAG, "Spring OverlayRender createOnGlThread called");
         this.context = context;
          //  this.tcpConnection = new Server(context,this);
-
-
 
         try {
             vertexShader =
@@ -183,6 +188,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
 
         ByteBuffer byteBuf = ByteBuffer.allocateDirect(vertices.length * 4);
+
         byteBuf.order(ByteOrder.nativeOrder());
         vertexBuffer = byteBuf.asFloatBuffer();
         vertexBuffer.put(vertices);
@@ -196,13 +202,15 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         drawListBuffer.put (drawOrder);
         drawListBuffer.position (0);
 
-/*
-        byteBuf = ByteBuffer.allocateDirect(texture.length * 4);
+
+        byteBuf = ByteBuffer.allocateDirect(uvwTex.length * 4);
         byteBuf.order(ByteOrder.nativeOrder());
-        textureBuffer = byteBuf.asFloatBuffer();
-        textureBuffer.put(texture);
-        textureBuffer.position(0);
-*/
+        uvwTexBuffer = byteBuf.asFloatBuffer();
+        uvwTexBuffer.put(uvwTex);
+        uvwTexBuffer.position(0);
+
+
+
 
 /*
 
@@ -217,20 +225,12 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                 1,
                 "models/trigrid.png"
         );
+    */
       //Load the Logo
         drawFirstTimeLogo(context);
 
-        // Activate the first texture (GL_TEXTURE0) and bind it to our handle
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLES20.glUniform1i(uTextureHandle, 0);
 
-        // set the viewport and a fixed, white background
-*/
 
-        // since we're using a PNG file with transparency, enable alpha blending.
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glEnable(GLES20.GL_BLEND);
 
         ShaderUtil.checkGLError(TAG, "Program parameters");
 
@@ -263,7 +263,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             GLES20.glDeleteProgram(overlayProgram);
             GLES20.glDeleteShader(vertexShader);
             GLES20.glDeleteShader(fragmentShader);
-            GLES20.glDeleteTextures(textures.length, textures, 0); // free the texture!
+            GLES20.glDeleteTextures(textures.length, textures, 0); // free the uvwTex!
         }
     }
 
@@ -297,24 +297,17 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjection, 0);
         ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
 
-        //Texturinput
-        /*
-        uTextureHandle = GLES20.glGetAttribLocation(overlayProgram, "uTexture");
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLES20.glUniform1i(uTextureHandle, 0);
-
-        textureCoordHandle = GLES20.glGetUniformLocation(overlayProgram, "TexCoordOut");
-        GLES20.glUniform1i(textureCoordHandle, 0);
-        */
-
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                 drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT,
                 drawListBuffer);
 
+        vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"TexCoordIn");
+        GLES20.glVertexAttribPointer(vsTextureCoord, COORDS_PER_TEXTURE, GLES20.GL_FLOAT,false,textureStride, uvwTexBuffer);
+
        GLES20.glDisableVertexAttribArray(mPositionHandle);
+
 
         ShaderUtil.checkGLError(TAG, "Cleaning up after drawing planes");
     }
