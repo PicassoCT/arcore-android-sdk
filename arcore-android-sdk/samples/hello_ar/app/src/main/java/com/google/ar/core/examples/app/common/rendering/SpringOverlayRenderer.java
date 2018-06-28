@@ -55,9 +55,9 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             1.0f, -1.0f,
     };
     private FloatBuffer uvwTexBuffer;
-    private final int textureStride = COORDS_PER_VERTEX * 4;
     private int vsTextureCoord;
     private int COORDS_PER_TEXTURE = 2;
+    private final int textureStride = COORDS_PER_TEXTURE * 4;
 
     //Vertex data
     //Number of Floats per Vertex in the ByteBuffer
@@ -143,6 +143,8 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
         //Load first instance of the spring overlay
         // since we're using a PNG file with transparency, enable alpha blending.
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         b.recycle();
     }
@@ -208,7 +210,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         uvwTexBuffer = byteBuf.asFloatBuffer();
         uvwTexBuffer.put(uvwTex);
         uvwTexBuffer.position(0);
-
 
 
 
@@ -291,11 +292,23 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                 false,
                 vertexStride,
                 vertexBuffer);
+        ShaderUtil.checkGLError(TAG, "Loading Position Handle");
 
         // Apply the projection and view transformation
         mMVPMatrixHandle = GLES20.glGetUniformLocation(overlayProgram, "uMVPMatrix");
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjection, 0);
         ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
+
+        // Texture Coordinates
+        vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"TexCoordIn");
+        GLES20.glVertexAttribPointer(vsTextureCoord,
+                COORDS_PER_TEXTURE ,
+                GLES20.GL_FLOAT,
+                false,
+                textureStride,
+                uvwTexBuffer);
+        if (vsTextureCoord < 0)
+         ShaderUtil.checkGLError(TAG, "Loading vsTextureCoord Handle");
 
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
@@ -303,11 +316,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                 GLES20.GL_UNSIGNED_SHORT,
                 drawListBuffer);
 
-        vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"TexCoordIn");
-        GLES20.glVertexAttribPointer(vsTextureCoord, COORDS_PER_TEXTURE, GLES20.GL_FLOAT,false,textureStride, uvwTexBuffer);
 
        GLES20.glDisableVertexAttribArray(mPositionHandle);
 
+       /////////////////////////////////////////////////////////////////////////////////////////////
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
 
         ShaderUtil.checkGLError(TAG, "Cleaning up after drawing planes");
     }
