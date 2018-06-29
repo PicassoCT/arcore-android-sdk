@@ -188,7 +188,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glLinkProgram(overlayProgram);
         GLES20.glUseProgram(overlayProgram);
 
-
+        //Prepare the vertex data
         ByteBuffer byteBuf = ByteBuffer.allocateDirect(vertices.length * 4);
 
         byteBuf.order(ByteOrder.nativeOrder());
@@ -204,7 +204,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         drawListBuffer.put (drawOrder);
         drawListBuffer.position (0);
 
-
+        //Prepare the uvw data
         byteBuf = ByteBuffer.allocateDirect(uvwTex.length * 4);
         byteBuf.order(ByteOrder.nativeOrder());
         uvwTexBuffer = byteBuf.asFloatBuffer();
@@ -299,7 +299,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjection, 0);
         ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
 
-        // Texture Coordinates
+        //Bind  UVW-Texture Coordinates to Shader Variable Handle
         vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"TexCoordIn");
         GLES20.glVertexAttribPointer(vsTextureCoord,
                 COORDS_PER_TEXTURE ,
@@ -310,6 +310,9 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         if (vsTextureCoord < 0)
          ShaderUtil.checkGLError(TAG, "Loading vsTextureCoord Handle");
 
+        //Bind Sampler to texture[0]
+        uTextureHandle = GLES20.glGetUniformLocation(overlayProgram,"TextureHandle");
+        GLES20.glUniform1i(uTextureHandle, 0);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                 drawOrder.length,
