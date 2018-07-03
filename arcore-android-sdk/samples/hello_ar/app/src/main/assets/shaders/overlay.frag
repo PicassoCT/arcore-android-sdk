@@ -16,12 +16,11 @@
 precision highp float;
    // uniform vec4 vColor;
     uniform sampler2D textureHandle;
-    unfirom sampler2D TexCoordIn;
     varying vec2 uvwTexPassToFrag;
 
 
     void main() {
-        //l_FragColor =  texture2D( textureHandle, vec2 (uvwTexPassToFrag.x, uvwTexPassToFrag.y));
-        gl_FragColor = vec4(1.0 ,0.0,0.0,0.5);
+        gl_FragColor =  texture2D( textureHandle, vec2 (uvwTexPassToFrag.x, uvwTexPassToFrag.y));
+        //gl_FragColor = vec4(1.0 ,0.0,0.0,0.5);
 
     }

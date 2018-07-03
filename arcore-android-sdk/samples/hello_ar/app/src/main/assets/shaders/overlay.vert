@@ -16,12 +16,10 @@
 
     uniform mat4 uMVPMatrix;
     attribute vec4 vPosition;
-    attribute vec2 TexCoordIn;
+    attribute vec2 uvwTextureCoord;
     varying vec2 uvwTexPassToFrag;
-
 
       void main() {
             gl_Position =  vPosition  ;
-
-            uvwTexPassToFrag = TexCoordIn;
+            uvwTexPassToFrag = uvwTextureCoord;
         }

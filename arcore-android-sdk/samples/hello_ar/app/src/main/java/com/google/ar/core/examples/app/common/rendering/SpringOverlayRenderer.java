@@ -40,7 +40,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     int mPositionHandle;
     int mMVPMatrixHandle;
     int uTextureHandle;
-    int textureCoordHandle;
+
 
     // Server tcpConnection;
     Server tcpConnection = null;
@@ -50,12 +50,12 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private int[] textures = new int[1];
     private static final float[] uvwTex = new float[]{
             1.0f, 1.0f,
-           -1.0f, 0.0f,
+            -1.0f, 0.0f,
             0.0f, -1.0f,
             1.0f, -1.0f,
     };
     private FloatBuffer uvwTexBuffer;
-    private int vsTextureCoord;
+    private int uvwTextureCoord;
     private int COORDS_PER_TEXTURE = 2;
     private final int textureStride = COORDS_PER_TEXTURE * 4;
 
@@ -157,7 +157,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
         Log.d(TAG, "Spring OverlayRender createOnGlThread called");
         this.context = context;
-         //  this.tcpConnection = new Server(context,this);
+        //  this.tcpConnection = new Server(context,this);
 
         try {
             vertexShader =
@@ -188,7 +188,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glLinkProgram(overlayProgram);
         GLES20.glUseProgram(overlayProgram);
 
-
+        //Prepare the vertex data
         ByteBuffer byteBuf = ByteBuffer.allocateDirect(vertices.length * 4);
 
         byteBuf.order(ByteOrder.nativeOrder());
@@ -204,7 +204,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         drawListBuffer.put (drawOrder);
         drawListBuffer.position (0);
 
-
+        //Prepare the uvw data
         byteBuf = ByteBuffer.allocateDirect(uvwTex.length * 4);
         byteBuf.order(ByteOrder.nativeOrder());
         uvwTexBuffer = byteBuf.asFloatBuffer();
@@ -227,7 +227,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                 "models/trigrid.png"
         );
     */
-      //Load the Logo
+        //Load the Logo
         drawFirstTimeLogo(context);
 
 
@@ -283,8 +283,14 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
         GLES20.glUseProgram(overlayProgram);
 
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
+
+
+
         //VertexPositions
-       mPositionHandle = GLES20.glGetAttribLocation(overlayProgram, "vPosition");
+        mPositionHandle = GLES20.glGetAttribLocation(overlayProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glVertexAttribPointer(mPositionHandle,
                 COORDS_PER_VERTEX,
@@ -299,17 +305,24 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjection, 0);
         ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
 
-        // Texture Coordinates
-        vsTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"TexCoordIn");
-        GLES20.glVertexAttribPointer(vsTextureCoord,
+        //Bind  UVW-Texture Coordinates to Shader Variable Handle
+        uvwTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"uvwTextureCoord");
+        if (uvwTextureCoord < 0)
+            ShaderUtil.checkGLError(TAG, "Loading uvwTextureCoord Handle");
+
+        GLES20.glVertexAttribPointer(
+                uvwTextureCoord,
                 COORDS_PER_TEXTURE ,
                 GLES20.GL_FLOAT,
                 false,
                 textureStride,
                 uvwTexBuffer);
-        if (vsTextureCoord < 0)
-         ShaderUtil.checkGLError(TAG, "Loading vsTextureCoord Handle");
+        GLES20.glEnableVertexAttribArray(uvwTextureCoord);
 
+
+        //Bind Sampler to texture[0]
+        uTextureHandle = GLES20.glGetUniformLocation(overlayProgram,"TextureHandle");
+        GLES20.glUniform1i(uTextureHandle, 0);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                 drawOrder.length,
@@ -317,12 +330,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                 drawListBuffer);
 
 
-       GLES20.glDisableVertexAttribArray(mPositionHandle);
 
-       /////////////////////////////////////////////////////////////////////////////////////////////
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(uvwTextureCoord);
+        GLES20.glDisable(GLES20.GL_BLEND);
 
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
+        /////////////////////////////////////////////////////////////////////////////////////////////
+
 
         ShaderUtil.checkGLError(TAG, "Cleaning up after drawing planes");
     }
@@ -356,9 +370,9 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         // than the OpenGL is rendered on.
 
         /*
-        * glSurfaceView.queueEvent(
-        *
-        * */
+         * glSurfaceView.queueEvent(
+         *
+         * */
         /*
             int id = context.getResources().getIdentifier("glSurfaceView","id", context.getPackageName());
             if (id!= 0) {
