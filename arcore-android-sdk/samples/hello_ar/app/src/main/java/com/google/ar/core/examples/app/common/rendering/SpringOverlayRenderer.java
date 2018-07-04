@@ -49,10 +49,10 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     //Texture data
     private int[] textures = new int[1];
     private static final float[] uvwTex = new float[]{
-            1.0f, 1.0f,
-            -1.0f, 0.0f,
-            0.0f, -1.0f,
-            1.0f, -1.0f,
+            0.0f, 1.00f,
+           0.0f, 0.0f,
+           - 1.0f, 0.0f,
+            -1.0f, 1.0f,
     };
     private FloatBuffer uvwTexBuffer;
     private int uvwTextureCoord;
@@ -64,7 +64,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     static final int COORDS_PER_VERTEX = 4;
     private FloatBuffer vertexBuffer;
     static float vertices[] = {   // in counterclockwise order:
-            -1.00f, 1.00f, 0.0f,1.0f,
+            -1.0f, 1.0f, 0.0f,1.0f,
             -1.00f, -1.0f, 0.0f,1.0f,
             1.0f, -1.0f, 0.0f,1.0f,
             1.0f, 1.0f, 0.0f,1.0f,
