@@ -16,9 +16,11 @@ public class TwinBuffer {
 
         myConnection = tcpConnection;
         try {
-            Buffers[0] = BitmapFactory.decodeStream(context.getAssets().open("models/trigrid.png"));
-            Buffers[1] = BitmapFactory.decodeStream(context.getAssets().open("models/trigrid.png"));
-        }catch (IOException i){}
+            Buffers[0] = BitmapFactory.decodeStream(context.getAssets().open("models/springoverlayrawA.png"));
+            Buffers[1] = BitmapFactory.decodeStream(context.getAssets().open("models/springoverlayrawB.png"));
+        }catch (IOException i){
+            i.printStackTrace();
+        }
         }
 
     public Bitmap Buffers[] = new Bitmap[2];
@@ -52,7 +54,9 @@ public class TwinBuffer {
                 Buffers[bufferID] =
                         BitmapFactory.decodeStream(context.getAssets().open(assetName));
             }catch (IOException i) {
-                Log.e(TAG, i.toString());
+                Log.e(TAG, "Error in loadTexture" );
+                i.printStackTrace();
+
             }
 
             myConnection.packageRecipient.callback(Buffers[bufferID]);

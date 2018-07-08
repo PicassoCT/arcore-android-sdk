@@ -1,6 +1,7 @@
 
 package com.google.ar.core.examples.app.common.rendering;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -49,10 +50,10 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     //Texture data
     private int[] textures = new int[1];
     private static final float[] uvwTex = new float[]{
-            0.0f, 1.00f,
+            0.0f, -1.00f,
            0.0f, 0.0f,
-           - 1.0f, 0.0f,
-            -1.0f, 1.0f,
+            1.0f, 0.0f,
+            1.0f, -1.0f,
     };
     private FloatBuffer uvwTexBuffer;
     private int uvwTextureCoord;
@@ -83,36 +84,33 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     // updates the Uniform Texture Object
     private void bindTexture(int textureID, Context context, Bitmap bitmap) {
         Log.d(TAG, "Spring OverlayRender bindTexture called");
-    /*
-         //TODO DelMe after Tests
-        Bitmap textureBitmap = null;
-        try {
-            textureBitmap =
-                    BitmapFactory.decodeStream(context.getAssets().open("models/trigrid.png"));
-        }catch (IOException i) {}
+
+        android.graphics.Matrix flip = new android.graphics.Matrix();
+        flip.postScale(-1f,-1f);
+        Bitmap b = null;
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
         GLES20.glGenTextures(textures.length, textures, 0);
+
         if (textures[0] == GLES20.GL_FALSE)
             throw new RuntimeException("Error loading uvwTex");
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_LINEAR_MIPMAP_LINEAR);
-        GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_LINEAR);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0); //
+        // bind the uvwTex and set parameters
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
         GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        //Load first instance of the spring overlay
+        // since we're using a PNG file with transparency, enable alpha blending.
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        bitmap.recycle();
 
 
-
-        textureBitmap.recycle();
-*/
 
     }
 
@@ -374,7 +372,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
          * glSurfaceView.queueEvent(
          *
          * */
-        /*
+
             int id = context.getResources().getIdentifier("glSurfaceView","id", context.getPackageName());
             if (id!= 0) {
                 ((GLSurfaceView) ((Activity) context).findViewById(id)).queueEvent(new Runnable() {
@@ -384,7 +382,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                     }
                 });
             }
-            */
+
     }
 
 
