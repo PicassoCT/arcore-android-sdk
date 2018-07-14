@@ -16,6 +16,7 @@
 
 package com.google.ar.core.examples.app.springar;
 
+import android.graphics.Canvas;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -251,6 +252,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
         displayRotationHelper.onSurfaceChanged(width, height);
         GLES20.glViewport(0, 0, width, height);
     }
+
 
     @Override
     public void onDrawFrame(GL10 gl) {

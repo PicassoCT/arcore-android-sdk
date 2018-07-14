@@ -76,7 +76,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     ByteBuffer dlb;
     private final int vertexStride = COORDS_PER_VERTEX * 4;
     private final int vertexCount = vertices.length / COORDS_PER_VERTEX;
-
+    private boolean boolHoloStyle =false;
 
 
     //Takes a loaded bitmap from a callback,
@@ -238,7 +238,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     /*updates the Data*/
     public void update(Camera camera, Anchor groundAnchor) {
-        Log.d(TAG, "Spring OverlayRender Update called");
+       // Log.d(TAG, "Spring OverlayRender Update called");
         if (tcpConnection == null) {
             tcpConnection = new Server(context,this);
         }
@@ -277,13 +277,16 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         float[] modelViewProjection = new float[16];
         Matrix.multiplyMM(modelViewProjection, 0, cameraPerspective, 0, cameraView, 0);
 
-        Log.d(TAG, "Spring OverlayRender drawOverlay called");
+        //Log.d(TAG, "Spring OverlayRender drawOverlay called");
 
         GLES20.glUseProgram(overlayProgram);
 
         GLES20.glEnable(GLES20.GL_BLEND);
-        //GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_CONSTANT_COLOR);
+        if (boolHoloStyle)
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_CONSTANT_COLOR);
+        else
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
         GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
 
 
@@ -334,6 +337,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glDisableVertexAttribArray(uvwTextureCoord);
         GLES20.glDisable(GLES20.GL_BLEND);
 
+        drawIPAdress();
         /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -351,13 +355,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     void drawIPAdress() {
         if (!tcpConnection.stillConnected) {
-            Paint ipPaint = new Paint();
-            ipPaint.setColor(Color.GREEN);
-            ipPaint.setTextSize(50);
-            ipPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-
             Canvas canvas = new Canvas();
+            Paint ipPaint = new Paint();
+            ipPaint.setColor(Color.RED);
+            ipPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             canvas.drawPaint(ipPaint);
+
+            ipPaint.setTextSize(50);
             canvas.drawText("Ip-Address:" + comonUtils.getIPAddress(true), canvas.getWidth() / 2, canvas.getHeight() / 2, ipPaint);
         }
     }
