@@ -12,16 +12,16 @@ public class TwinBuffer {
     final String TAG = getClass().getSimpleName();
     private Server myConnection;
 
-    public  TwinBuffer(Context context, Server tcpConnection) {
+    public TwinBuffer(Context context, Server tcpConnection) {
 
         myConnection = tcpConnection;
         try {
             Buffers[0] = BitmapFactory.decodeStream(context.getAssets().open("models/springoverlayrawA.png"));
             Buffers[1] = BitmapFactory.decodeStream(context.getAssets().open("models/springoverlayrawB.png"));
-        }catch (IOException i){
+        } catch (IOException i) {
             i.printStackTrace();
         }
-        }
+    }
 
     public Bitmap Buffers[] = new Bitmap[2];
 
@@ -31,10 +31,12 @@ public class TwinBuffer {
     public Bitmap getDrawBuffer() {
         return Buffers[drawIndex];
     }
+    public int getDrawBufferIndex() { return drawIndex;    }
 
     Bitmap getWriteBuffer() {
         return Buffers[writeIndex];
     }
+    public int getWriteBufferIndex() { return writeIndex; }
 
 
     public void switchBuffer() {
@@ -43,23 +45,17 @@ public class TwinBuffer {
         writeIndex = temp;
     }
 
-    public void loadTexture(Context context, int bufferID, String assetName) {
-            if ( Buffers[bufferID] != null) {
-                Buffers[bufferID].recycle();
-            }
+    public Bitmap setTexture(int bufferID, byte[] rawImage) {
+        if (Buffers[bufferID] != null) {
+            Buffers[bufferID].recycle();
+        }
 
-            android.graphics.Matrix flip = new android.graphics.Matrix();
-            flip.postScale(-1f, -1f);
-            try {
-                Buffers[bufferID] =
-                        BitmapFactory.decodeStream(context.getAssets().open(assetName));
-            }catch (IOException i) {
-                Log.e(TAG, "Error in loadTexture" );
-                i.printStackTrace();
+        android.graphics.Matrix flip = new android.graphics.Matrix();
+        flip.postScale(-1f, -1f);
+        Buffers[bufferID] = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.length);
 
-            }
 
-            myConnection.packageRecipient.callback(Buffers[bufferID]);
+        return Buffers[bufferID];
 
 
     }
