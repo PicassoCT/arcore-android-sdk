@@ -1,193 +1,143 @@
 package com.google.ar.core.examples.app.common.tcpClient;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
-
-import com.google.ar.core.Pose;
-import com.google.ar.core.examples.app.springar.SpringARActivity;
+import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
 public class Server {
-    public static final int SERVERPORT = 8090;
-    private static final String TAG = Server.class.getSimpleName();
-    private ServerSocket serverSocket;
+    //Size of the Transfered Datagrams
+    int MAX_UDP_DATAGRAM_RCV_LEN = 1024;
+    int MAX_UDP_DATAGRAM_SND_LEN = 1024;
+    //Server Port
+    int UDP_SERVER_PORT = 8090;
+
+    //Message Zähler - 0 bedeutet die Verbindung wurde reinitialisiert
+    public int messageCounter = 0;
+
+    //Basically Watchdogvariable- every arriving Datagram resets the timer
+    public  boolean stillConnected = true;
+
+    public DatagramReciever datagramReciever = null;
+
+    //Callback to return recieved data to the corresponding thread
     IPackageRecivedCallback packageRecipient;
+    Context context;
 
-    Thread serverThread = null;
-    static String sendCFGHeader = "SPRINGARREC;CFG=";
-    static String sendCAMHeader = "SPRINGARCAM;DATA=";
-    static String recieveDataHeader = "SPRINGARSND;DATA=";
-    static String recieveResetHeader = "SPRINGAR;RESET;";
-    static String seperator = ";";
-    public TwinBuffer Buffer;
-    Socket socket = null;
-
-    private Pose groundAnchorPose;
-    private Pose cameraPose;
-
-
-    int messageCounter; //Zählt die Anzahl der erhaltenen Messages
-    public boolean stillConnected;
-
-    private void resetAllMessages(String Message) {
-        if (Message.indexOf(recieveResetHeader) != 0)
-            messageCounter = 0;
-    }
-
-    private String formConfigurationMessage() {
-
-        Log.e(TAG, "Server formCingurationMessage called");
-        String message = "";
-
-        message = sendCFGHeader +
-                Build.MODEL + seperator +//devicename
-                Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
-                Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
-                50 + seperator;// divider
-        return message;
-    }
-
-    private String formCamMatriceMessage(Pose camPose, Pose anchorPose) {
-        Log.e(TAG, "Server formCamMatriceMessage called");
-        String message = sendCAMHeader;
-        float mat4_4[] = new float[16];
-        camPose.toMatrix(mat4_4, 0);
-
-        for (int i = 0; i < 16; i++) {
-            message += (mat4_4[i] + seperator);
-        }
-
-        return message;
-    }
-
+    //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
-        Log.d("Server constructed", "Server Constructor reached");
-        Buffer = new TwinBuffer(context, this);
         this.packageRecipient = packageRecipient;
-
-        this.serverThread = new Thread(new ServerThread());
-        this.serverThread.start();
+        this.context = context;
     }
 
-    public void halt() {
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    //Restart the Server on Resume
+    protected void onResume() {
+        datagramReciever = new DatagramReciever();
+        datagramReciever.start();
+    }
+
+    protected void onPause() {
+        datagramReciever.kill();
+    }
+
+    public class DatagramReciever extends Thread {
+        boolean bKeepRunning = true;
+        private String datagramToSend = "";
+        private boolean newDatagramToSend = false;
+        int TIME_OF_FRAME_IN_MS = 30;
+        DatagramSocket socket = null;
+
+        //get him, he did not write a getter for a private variable
+        private int writeBuffer = 0;
+
+        int getReadBuffer() {
+            if (writeBuffer == 1) return 0;
+            return 1;
         }
-    }
 
-    public void updateCam_GroundAnchor(Pose camera, Pose groundAnchor) {
-        cameraPose = camera;
-        groundAnchorPose = groundAnchor;
-    }
+        final byte[] searchDataHeaderByte = "SPRINGARSND;DATA=".getBytes();
+        final byte[] searchResetHeaderByte ="SPRINGARSND;RESET=".getBytes();
 
-    class ServerThread implements Runnable {
-        ServerThread() {
-            try {
-                serverSocket = new ServerSocket(SERVERPORT);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        private void handleManagedTraffic(byte[] payload) {
+            if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1)  messageCounter = 0;
+        }
+
+
+
+
+        private boolean isDataMessage(byte [] payload) {
+            return -1  != comonUtils.indexOf(payload, searchDataHeaderByte);
+        }
+
+        void switchBuffer() {
+            writeBuffer = getReadBuffer();
         }
 
         public void run() {
-            Log.d("Server::run", "Server Listening reached");
+            String message;
+            byte[][] rcv_message = new byte[2][MAX_UDP_DATAGRAM_RCV_LEN];
+            byte[] snd_message = new byte[MAX_UDP_DATAGRAM_SND_LEN];
 
-            while (!Thread.currentThread().isInterrupted()) {
+            DatagramPacket snd_packet = new DatagramPacket(snd_message, snd_message.length);
 
-                try {
 
-                    socket = serverSocket.accept();
+            //Initialisation
+            try {
+                DatagramSocket socket = new DatagramSocket(UDP_SERVER_PORT);
+                while (bKeepRunning) {
+                   
+                    DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message.length);
 
-                    CommunicationThread commThread = new CommunicationThread(socket, packageRecipient);
-                    new Thread(commThread).start();
+                    // Receiving
+                    socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
+                    socket.receive(rcv_packet);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    //TODO Delete String conversion
+                    message = new String(rcv_message[writeBuffer], 0, rcv_message[writeBuffer].length);
+                    Log.d("altServer::rcv", message);
+
+                    // callback
+                    if (isDataMessage(rcv_message[getReadBuffer()])) {
+                        packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
+                    } else {
+                        handleManagedTraffic(rcv_message[getReadBuffer()]);
+                    }
+
+                    switchBuffer();
+                    //callback to update Buffer
+
+                    if (newDatagramToSend) {
+                        snd_message = datagramToSend.getBytes();
+                        snd_packet = new DatagramPacket(snd_message, snd_message.length, snd_packet.getAddress(), snd_packet.getPort());
+                        socket.send(snd_packet);
+                        messageCounter++;
+                        Log.d("altServer::snd", datagramToSend);
+                        newDatagramToSend = false;
+                    }
+                    //Sending
                 }
-
-            }
-            Log.d("Server run ", "Server run interrupted");
-        }
-    }
-
-    //Writes Data to the socket
-    class CommunicationThread implements Runnable {
-
-        private Socket clientSocket;
-        private BufferedWriter output;
-        private BufferedReader input;
-        IPackageRecivedCallback packageRecipient;
-
-        //Senden
-        public CommunicationThread(Socket clientSocket, IPackageRecivedCallback packageRecipient) {
-            Log.d("Server::run", "Server Listening reached");
-
-
-            this.packageRecipient = packageRecipient;
-            this.clientSocket = clientSocket;
-
-        }
-
-        public void run() {
-            //Senden
-            try {
-                this.output = new BufferedWriter(new OutputStreamWriter(System.out));
-
-
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
-
-
-            try {
-                this.input = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (socket != null) {
+                socket.close();
             }
-            while (!Thread.currentThread().isInterrupted()) {
-            //process Input
-            try {
-
-                String read = input.readLine();
-                //TODO Remove Debug String
-                Log.d(this.getClass().getSimpleName(), "Recived Data::" + read);
-
-                //Setzt die Verbindung zurück wenn der Host das anfordert
-                resetAllMessages(read);
-
-                if (read.contains(recieveDataHeader)) {
-                    read.replace(recieveDataHeader, "");
-                    Bitmap refToWriteBuffer = Buffer.getWriteBuffer();
-                    //noinspection UnusedAssignment
-                    refToWriteBuffer = new BitmapFactory().decodeStream(this.clientSocket.getInputStream());
-                    Buffer.switchBuffer();
-                    packageRecipient.callback(Buffer.getDrawBuffer());
-                }
-                //write Output
-                output.write("This will be printed on stdout!\n");
-                output.flush();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
         }
+
+
+
+        public void kill() {
+            bKeepRunning = false;
+        }
+
+        public boolean setSendToSpringMessage(String toSend) {
+            if (newDatagramToSend) return false;
+
+            datagramToSend = toSend;
+            newDatagramToSend = true;
+            return newDatagramToSend;
         }
     }
 }
-

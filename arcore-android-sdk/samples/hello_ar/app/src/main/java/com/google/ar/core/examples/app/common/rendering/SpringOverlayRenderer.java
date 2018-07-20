@@ -3,12 +3,14 @@ package com.google.ar.core.examples.app.common.rendering;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.*;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.ar.core.Anchor;
@@ -17,7 +19,6 @@ import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.app.common.tcpClient.*;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
-import com.google.ar.core.examples.app.common.tcpClient.Server;
 
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private int vertexShader;
     private int fragmentShader;
     private int overlayProgram;
+    TwinBuffer buffers;
 
     //Shader Uniform Handles
     int mPositionHandle;
@@ -210,21 +212,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         uvwTexBuffer.position(0);
 
 
-
-/*
-
-        //Trette tcpConnection Buffer Initialisierung los
-
-        tcpConnection.Buffer.loadTexture(context,
-                0,
-
-                "models/trigrid.png"
-        );
-        tcpConnection.Buffer.loadTexture(context,
-                1,
-                "models/trigrid.png"
-        );
-    */
         //Load the Logo
         drawFirstTimeLogo(context);
 
@@ -243,17 +230,56 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             tcpConnection = new Server(context,this);
         }
 
+        if (tcpConnection.messageCounter == 0){
+            tcpConnection.datagramReciever.setSendToSpringMessage(formConfigurationMessage());
+        }
+
         if ((camera != null) && (groundAnchor != null)) {
 
             //Get Camera Position relative to MapCenter
-            if (camera.getTrackingState() == TrackingState.TRACKING)
-                tcpConnection.updateCam_GroundAnchor(camera.getPose(), getMapCenterFromAnchor(groundAnchor));
-            else
-                tcpConnection.updateCam_GroundAnchor(camera.getDisplayOrientedPose(), getMapCenterFromAnchor(groundAnchor));
+            if (camera.getTrackingState() == TrackingState.TRACKING) {
+                tcpConnection.datagramReciever.setSendToSpringMessage(
+                                buildGroundAnchorMessage(camera.getPose(),
+                                                    getMapCenterFromAnchor(groundAnchor)));
+            } else {
+                tcpConnection.datagramReciever.setSendToSpringMessage(
+                            buildGroundAnchorMessage(camera.getDisplayOrientedPose(),
+                                                     getMapCenterFromAnchor(groundAnchor)));
+            }
         }
 
 
     }
+    static String seperator = ";";
+    static String sendCFGHeader = "SPRINGARREC;CFG=";
+    static String sendCAMHeader = "SPRINGARCAM;DATA=";
+
+    private String formConfigurationMessage() {
+
+        Log.e(TAG, "Server formCingurationMessage called");
+        String message = "";
+
+        message = sendCFGHeader +
+                Build.MODEL + seperator +//devicename
+                Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
+                Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
+                50 + seperator;// divider
+        return message;
+    }
+
+    private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
+        Log.e(TAG, "Server formCamMatriceMessage called");
+        String message = sendCAMHeader;
+        float mat4_4[] = new float[16];
+        camPose.toMatrix(mat4_4, 0);
+
+        for (int i = 0; i < 16; i++) {
+            message += (mat4_4[i] + seperator);
+        }
+
+        return message;
+    }
+
 
     public void tearDown()
     {
@@ -367,7 +393,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
     @Override
-    public void callback(final Bitmap bitmap) {
+    public void callback(byte [] array, int length ) {
         //Necessary to avoid  ConcurrentModification error,
         // which means you are trying to access the rendering pipeline from a different thread
         // than the OpenGL is rendered on.
@@ -376,16 +402,18 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
          * glSurfaceView.queueEvent(
          *
          * */
+        buffers.setTexture(buffers.getWriteBufferIndex(),array);
 
             int id = context.getResources().getIdentifier("glSurfaceView","id", context.getPackageName());
             if (id!= 0) {
                 ((GLSurfaceView) ((Activity) context).findViewById(id)).queueEvent(new Runnable() {
                     @Override
                     public void run() {
-                        bindTexture(0, context, bitmap);
+                        bindTexture(0, context, buffers.getDrawBuffer());
                     }
                 });
             }
+            buffers.switchBuffer();
 
     }
 

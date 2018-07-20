@@ -12,7 +12,26 @@ import java.net.*;
 import java.util.*;
 
 public class comonUtils {
-
+    //Find a smaller Array in a larger byte array
+    /**
+     * Convert byte array to hex string
+     * @param outerArray array to search
+     * @param smallerArray searched for array
+     * @return -1 on not found, else position as int
+     */
+    public static int indexOf(byte[] outerArray, byte[] smallerArray) {
+        for(int i = 0; i < outerArray.length - smallerArray.length+1; ++i) {
+            boolean found = true;
+            for(int j = 0; j < smallerArray.length; ++j) {
+                if (outerArray[i+j] != smallerArray[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return i;
+        }
+        return -1;
+    }
     /**
      * Convert byte array to hex string
      * @param bytes toConvert
