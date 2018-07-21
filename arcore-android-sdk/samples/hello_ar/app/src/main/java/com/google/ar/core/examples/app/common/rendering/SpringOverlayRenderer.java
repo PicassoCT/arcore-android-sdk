@@ -9,7 +9,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.opengl.*;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.os.Build;
 import android.util.Log;
 
@@ -17,9 +20,10 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.app.common.tcpClient.*;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
-
+import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
+import com.google.ar.core.examples.app.common.tcpClient.Server;
+import com.google.ar.core.examples.app.common.tcpClient.TwinBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -215,9 +219,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         //Load the Logo
         drawFirstTimeLogo(context);
 
-
-
-
         ShaderUtil.checkGLError(TAG, "Program parameters");
 
     }
@@ -225,7 +226,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     /*updates the Data*/
     public void update(Camera camera, Anchor groundAnchor) {
-       // Log.d(TAG, "Spring OverlayRender Update called");
+        //Log.d(TAG, "Spring OverlayRender Update called");
         if (tcpConnection == null) {
             tcpConnection = new Server(context,this);
         }
@@ -234,7 +235,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             tcpConnection.datagramReciever.setSendToSpringMessage(formConfigurationMessage());
         }
 
-        if ((camera != null) && (groundAnchor != null)) {
+        if ((camera != null) && (groundAnchor != null) &&  tcpConnection.messageCounter != 0) {
 
             //Get Camera Position relative to MapCenter
             if (camera.getTrackingState() == TrackingState.TRACKING) {
@@ -251,25 +252,25 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     }
     static String seperator = ";";
-    static String sendCFGHeader = "SPRINGARREC;CFG=";
-    static String sendCAMHeader = "SPRINGARCAM;DATA=";
+    static String sendCFGHeader = "SPRINGARREC;CFG;";
+    static String sendCAMHeader = "SPRINGARCAM;DATA;";
 
     private String formConfigurationMessage() {
 
-        Log.e(TAG, "Server formCingurationMessage called");
+        Log.d(TAG, "Server formConfigurationMessage called");
         String message = "";
 
         message = sendCFGHeader +
-                Build.MODEL + seperator +//devicename
-                Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
-                Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
-                50 + seperator;// divider
+                "MODEL=" + Build.MODEL + seperator +//devicename
+                "DISPLAYWIDTH=" + Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
+                "DISPLAYHEIGTH="+ Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
+                "DISPLAYDIVIDE="+ 50 + seperator;// divider
         return message;
     }
 
     private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
-        String message = sendCAMHeader;
+        String message = sendCAMHeader + "MATRICE=";
         float mat4_4[] = new float[16];
         camPose.toMatrix(mat4_4, 0);
 
@@ -363,7 +364,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         GLES20.glDisableVertexAttribArray(uvwTextureCoord);
         GLES20.glDisable(GLES20.GL_BLEND);
 
-        drawIPAdress();
         /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -379,18 +379,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
 
-    void drawIPAdress() {
-        if (!tcpConnection.stillConnected) {
-            Canvas canvas = new Canvas();
-            Paint ipPaint = new Paint();
-            ipPaint.setColor(Color.RED);
-            ipPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            canvas.drawPaint(ipPaint);
-
-            ipPaint.setTextSize(50);
-            canvas.drawText("Ip-Address:" + comonUtils.getIPAddress(true), canvas.getWidth() / 2, canvas.getHeight() / 2, ipPaint);
-        }
-    }
 
     @Override
     public void callback(byte [] array, int length ) {
