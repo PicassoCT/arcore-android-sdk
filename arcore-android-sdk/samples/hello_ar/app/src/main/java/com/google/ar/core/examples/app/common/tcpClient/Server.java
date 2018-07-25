@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
+
+import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
 public class Server {
@@ -23,6 +25,7 @@ public class Server {
     private String defaultHostIP = "192.168.178.179";
 
     InetAddress ipAdress = null;
+    byte[][] rcv_message;
 
     //Message Zähler - 0 bedeutet die Verbindung wurde reinitialisiert
     public int messageCounter = 0;
@@ -35,6 +38,7 @@ public class Server {
     //Callback to return recieved data to the corresponding thread
     IPackageRecivedCallback packageRecipient;
     Context context;
+    Stopwatch watchDog;
 
     //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
@@ -62,7 +66,10 @@ public class Server {
                 + 2 // deflate overhead
                 + 12; // IEND chunk;
 
+        rcv_message = new byte[2][MAX_UDP_DATAGRAM_RCV_LEN];
         this.datagramReciever = new DatagramReciever();
+        watchDog = new Stopwatch();
+        watchDog.start();
         datagramReciever.start();
     }
 
@@ -84,7 +91,7 @@ public class Server {
         int TIME_OF_FRAME_IN_MS = 30;
         DatagramSocket socket = null;
 
-        //get him, he did not write a getter for a private variable
+        //Buffer gettters and setters
         private int writeBuffer = 0;
 
         int getReadBuffer() {
@@ -92,80 +99,87 @@ public class Server {
             return 1;
         }
 
+        void switchBuffer() {
+            writeBuffer = getReadBuffer();
+        }
+
+        //Management Communication Headers
         final byte[] searchDataHeaderByte = "SPRINGARSND;DATA;".getBytes();
         final String searchResetHeaderString = "SPRINGARSND;RESET;IPADDRRESS=";
         final byte[] searchResetHeaderByte = searchResetHeaderString.getBytes(); //Ipadress
         final String broadcastHeaderString = "SPRINGAR;BROADCAST;IPADDRRESS=" + comonUtils.getIPAddress(true);
         final byte[] broadcastHeaderByte = broadcastHeaderString.getBytes();
 
-
         private boolean isDataMessage(byte[] payload) {
-            return -1 != comonUtils.indexOf(payload, searchDataHeaderByte);
+            return (-1 != comonUtils.indexOf(payload, searchDataHeaderByte));
         }
 
-        void switchBuffer() {
-            writeBuffer = getReadBuffer();
-        }
 
         public void run() {
             String message;
-            byte[][] rcv_message = new byte[2][MAX_UDP_DATAGRAM_RCV_LEN];
 
 
             Log.d("Server:Run", "Run started");
             String delMeOldMessage = new String();
-            //Initialisation
+
             try {
-                DatagramSocket socket = new DatagramSocket(UDP_SERVER_PORT);
-                while (stillConnected) {
+                socket = new DatagramSocket(UDP_SERVER_PORT);
 
-                    DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message.length);
+                while (true) {
+                    broadcastDevice();
+                    //Initialisation
 
+                    while (stillConnected) {
 
-                    {
-                        // Receiving
-                        socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
-                        try {
-                            socket.receive(rcv_packet);
-                        } catch (SocketTimeoutException e) {
-                            //Log.e("Server:Run", "Socket timed out");
+                        DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message.length);
+
+                        {
+                            // Receiving
+                            boolean NewMessageArrived = true;
+                            socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
+                            try {
+                                socket.receive(rcv_packet);
+                            } catch (SocketTimeoutException e) {
+                                    NewMessageArrived = false;
+                            }
+                            resetWatchDogTimer(NewMessageArrived);
+
+                            //TODO Delete String conversion
+                            message = new String(rcv_message[writeBuffer], "US-ASCII");// rcv_message[writeBuffer].length);
+                            if (!message.contentEquals(delMeOldMessage)) {
+                                Log.d("Server:Run", "RCV: " + message);
+                                delMeOldMessage = message;
+                            }
+
+                        }
+
+                        {
+                            // callback
+                            if (isDataMessage(rcv_message[getReadBuffer()])) {
+                                packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
+                            } else {
+                                handleManagedTraffic(rcv_message[getReadBuffer()]);
+                            }
+                        }
+
+                        switchBuffer();
+                        { //callback to update Buffer
+
+                            if (newDatagramToSend && ipAdress != null) {
+                                Log.d("Server:Run", "Run sending");
+                                byte[] snd_message = datagramToSend.getBytes();
+
+                                snd_packet = new DatagramPacket(snd_message, snd_message.length, ipAdress, UDP_SERVER_PORT);
+                                socket.send(snd_packet);
+                                Log.d("Server:Run", "SND: " + datagramToSend);
+                                newDatagramToSend = false;
+                            }
                         }
 
 
-                        //TODO Delete String conversion
-                        message = new String(rcv_message[writeBuffer], "US-ASCII");// rcv_message[writeBuffer].length);
-                        if (!message.contentEquals(delMeOldMessage)) {
-                            Log.d("Server:Run", "RCV: " + message);
-                            delMeOldMessage = message;
-                        }
-
+                        //Sending
                     }
 
-                    {
-                        // callback
-                        if (isDataMessage(rcv_message[getReadBuffer()])) {
-                            packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
-                        } else {
-                            handleManagedTraffic(rcv_message[getReadBuffer()]);
-                        }
-                    }
-
-                    switchBuffer();
-                    { //callback to update Buffer
-
-                        if (newDatagramToSend && ipAdress != null) {
-                            Log.d("Server:Run", "Run sending");
-                            byte[] snd_message = datagramToSend.getBytes();
-
-                            snd_packet = new DatagramPacket(snd_message, snd_message.length, ipAdress, UDP_SERVER_PORT);
-                            socket.send(snd_packet);
-                            Log.d("Server:Run", "SND: " + datagramToSend);
-                            newDatagramToSend = false;
-                        }
-                    }
-
-                resetWatchDogTimer();
-                    //Sending
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -175,13 +189,20 @@ public class Server {
             }
         }
 
-        private void resetWatchDogTimer() {
-        stillConnected = true;
+
+        private void resetWatchDogTimer(boolean newMessageArrived) {
+            if (watchDog.getElapsedTimeMili() > 2000 && !newMessageArrived) {
+                stillConnected = false;
+            }
+
+            if (newMessageArrived) {//restart
+                watchDog.start();
+            }
+
         }
 
-
-
-       private void handleManagedTraffic(byte[] payload) {
+        // handles management traffic like configurstion files
+        private void handleManagedTraffic(byte[] payload) {
             if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1) {
                 messageCounter = 0;
                 try {
@@ -191,48 +212,40 @@ public class Server {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-                snd_packet.setPort(UDP_SERVER_PORT);
+
             }
         }
 
-        public void broadCastDeviceSearchHost() {
-            byte[] rcv_message = new byte[MAX_UDP_DATAGRAM_RCV_LEN];
+        public void broadcastDevice() {
+            Log.d("Server:Run", "Broadcast");
             try {
-            //activate broadcast
-            socket.setBroadcast(true);
-
-            while (!stillConnected) {
-
+                //activate broadcast
+                socket.setBroadcast(true);
                 snd_packet = new DatagramPacket(broadcastHeaderByte, broadcastHeaderByte.length, InetAddress.getByName("255.255.255.255"), UDP_SERVER_PORT);
                 socket.send(snd_packet);
 
-                DatagramPacket rcv_packet = new DatagramPacket(rcv_message, rcv_message.length);
+                DatagramPacket rcv_packet = new DatagramPacket(rcv_message[1], rcv_message[1].length);
 
-                    // Receiving
-                    try {
-                        socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
-                        socket.receive(rcv_packet);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                // Receiving
+                try {
+                    socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
+                    socket.receive(rcv_packet);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    handleManagedTraffic(rcv_message);
+                handleManagedTraffic(rcv_message[1]);
 
-
-
-
-        }
-
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Log.d("Server:Broadcast", "Interrupted");
+                }
                 socket.setBroadcast(false);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
-    }
-
-
-
-
+        }
 
 
         public void kill() {
