@@ -104,11 +104,12 @@ public class Server {
         }
 
         //Management Communication Headers
-        final byte[] searchDataHeaderByte = "SPRINGARSND;DATA;".getBytes();
-        final String searchResetHeaderString = "SPRINGARSND;RESET;IPADDRRESS=";
+        final byte[] searchDataHeaderByte = "SPRINGAR;DATA;".getBytes();
+        final String searchResetHeaderString = "SPRINGAR;RESET;IPADDRRESS=";
         final byte[] searchResetHeaderByte = searchResetHeaderString.getBytes(); //Ipadress
-        final String broadcastHeaderString = "SPRINGAR;BROADCAST;IPADDRRESS=" + comonUtils.getIPAddress(true);
-        final byte[] broadcastHeaderByte = broadcastHeaderString.getBytes();
+        final String broadcastHeaderString = "SPRINGAR;BROADCAST;IPADDRRESS=" ;
+        byte[] broadcastHeaderByte;
+
 
         private boolean isDataMessage(byte[] payload) {
             return (-1 != comonUtils.indexOf(payload, searchDataHeaderByte));
@@ -221,7 +222,10 @@ public class Server {
             try {
                 //activate broadcast
                 socket.setBroadcast(true);
-                snd_packet = new DatagramPacket(broadcastHeaderByte, broadcastHeaderByte.length, InetAddress.getByName("255.255.255.255"), UDP_SERVER_PORT);
+                snd_packet = new DatagramPacket( (broadcastHeaderString + comonUtils.getIPAddress(true)).getBytes() ,
+                                                broadcastHeaderByte.length,
+                                                InetAddress.getByName("255.255.255.255"),
+                                                UDP_SERVER_PORT);
                 socket.send(snd_packet);
 
                 DatagramPacket rcv_packet = new DatagramPacket(rcv_message[1], rcv_message[1].length);

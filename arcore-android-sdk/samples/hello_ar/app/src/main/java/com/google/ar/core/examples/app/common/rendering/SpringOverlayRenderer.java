@@ -252,8 +252,8 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     }
     static String seperator = ";";
-    static String sendCFGHeader = "SPRINGARREC;CFG;";
-    static String sendCAMHeader = "SPRINGARCAM;DATA;";
+    static String sendCFGHeader = "SPRINGAR;CFG;";
+    static String sendCAMHeader = "SPRINGAR;DATA;";
 
     private String formConfigurationMessage() {
 
@@ -263,7 +263,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         message = sendCFGHeader +
                 "MODEL=" + Build.MODEL + seperator +//devicename
                 "DISPLAYWIDTH=" + Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
-                "DISPLAYHEIGTH="+ Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
+                "DISPLAYHEIGHT="+ Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
                 "DISPLAYDIVIDE="+ 50 + seperator;// divider
         return message;
     }
