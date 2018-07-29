@@ -6,9 +6,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
@@ -20,7 +17,7 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.app.common.helpers.comonUtils;
+import com.google.ar.core.examples.app.common.helpers.SpringAR;
 import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
 import com.google.ar.core.examples.app.common.tcpClient.TwinBuffer;
@@ -248,34 +245,29 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
                                                      getMapCenterFromAnchor(groundAnchor)));
             }
         }
-
-
     }
-    static String seperator = ";";
-    static String sendCFGHeader = "SPRINGARREC;CFG;";
-    static String sendCAMHeader = "SPRINGARCAM;DATA;";
+
 
     private String formConfigurationMessage() {
 
         Log.d(TAG, "Server formConfigurationMessage called");
-        String message = "";
 
-        message = sendCFGHeader +
-                "MODEL=" + Build.MODEL + seperator +//devicename
-                "DISPLAYWIDTH=" + Resources.getSystem().getDisplayMetrics().widthPixels + seperator +// screen width
-                "DISPLAYHEIGTH="+ Resources.getSystem().getDisplayMetrics().heightPixels + seperator +// screen heigth
-                "DISPLAYDIVIDE="+ 50 + seperator;// divider
-        return message;
+        return  SpringAR.sendCFGHeader +
+                "MODEL=" + Build.MODEL + SpringAR.seperator +//devicename
+                "DISPLAYWIDTH=" + Resources.getSystem().getDisplayMetrics().widthPixels + SpringAR.seperator +// screen width
+                "DISPLAYHEIGTH="+ Resources.getSystem().getDisplayMetrics().heightPixels + SpringAR.seperator +// screen heigth
+                "DISPLAYDIVIDE="+ 50 + SpringAR.seperator;// divider
+
     }
 
     private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
-        String message = sendCAMHeader + "MATRICE=";
+        String message = SpringAR.sendCAMHeader + "MATRICE=";
         float mat4_4[] = new float[16];
         camPose.toMatrix(mat4_4, 0);
 
         for (int i = 0; i < 16; i++) {
-            message += (mat4_4[i] + seperator);
+            message += (mat4_4[i] + SpringAR.seperator);
         }
 
         return message;
@@ -303,8 +295,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     public void drawOverlay(float[] cameraView, float[] cameraPerspective) {
         float[] modelViewProjection = new float[16];
         Matrix.multiplyMM(modelViewProjection, 0, cameraPerspective, 0, cameraView, 0);
-
-        //Log.d(TAG, "Spring OverlayRender drawOverlay called");
 
         GLES20.glUseProgram(overlayProgram);
 
