@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+
+import com.google.ar.core.examples.app.common.helpers.SpringAR;
+
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -18,11 +20,11 @@ import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
 public class Server {
     //Size of the Transfered Datagrams
-    int MAX_UDP_DATAGRAM_RCV_LEN = 1024;
+    private int MAX_UDP_DATAGRAM_RCV_LEN;
 
     //Server Port
-    int UDP_SERVER_PORT = 8090;
-    private String defaultHostIP = "192.168.178.179";
+    private int UDP_SERVER_PORT = 8090;
+    private String defaultHostIP = comonUtils.getIPAddress(true);
 
     InetAddress ipAdress = null;
     byte[][] rcv_message;
@@ -42,7 +44,7 @@ public class Server {
 
     //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
-        stillConnected = true;
+        stillConnected = false;
         this.packageRecipient = packageRecipient;
         this.context = context;
 
@@ -60,8 +62,7 @@ public class Server {
                 + (Resources.getSystem().getDisplayMetrics().widthPixels // pixels
                 * 3 // Red, blue, green color samples
                 * 2 // 16 bits per color sample
-        )
-        )
+        ))
                 + 6 // zlib compression overhead
                 + 2 // deflate overhead
                 + 12; // IEND chunk;
@@ -103,13 +104,12 @@ public class Server {
             writeBuffer = getReadBuffer();
         }
 
-        //Management Communication Headers
-        final byte[] searchDataHeaderByte = "SPRINGAR;DATA;".getBytes();
-        final String searchResetHeaderString = "SPRINGAR;RESET;IPADDRRESS=";
-        final byte[] searchResetHeaderByte = searchResetHeaderString.getBytes(); //Ipadress
-        final String broadcastHeaderString = "SPRINGAR;BROADCAST;IPADDRRESS=" ;
-        byte[] broadcastHeaderByte;
 
+        //Management Communication Headers
+        final byte[] searchDataHeaderByte = SpringAR.searchDataHeader.getBytes();
+        final byte[] searchResetHeaderByte = SpringAR.searchResetHeaderString.getBytes(); //Ipadress
+
+        final byte[] broadcastHeaderByte = (SpringAR.broadcasteHeader + comonUtils.getIPAddress(true)).getBytes();
 
         private boolean isDataMessage(byte[] payload) {
             return (-1 != comonUtils.indexOf(payload, searchDataHeaderByte));
@@ -141,7 +141,7 @@ public class Server {
                             try {
                                 socket.receive(rcv_packet);
                             } catch (SocketTimeoutException e) {
-                                    NewMessageArrived = false;
+                                NewMessageArrived = false;
                             }
                             resetWatchDogTimer(NewMessageArrived);
 
@@ -157,6 +157,7 @@ public class Server {
                         {
                             // callback
                             if (isDataMessage(rcv_message[getReadBuffer()])) {
+                                stillConnected = true;
                                 packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
                             } else {
                                 handleManagedTraffic(rcv_message[getReadBuffer()]);
@@ -206,14 +207,15 @@ public class Server {
         private void handleManagedTraffic(byte[] payload) {
             if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1) {
                 messageCounter = 0;
+                stillConnected = false;
+
                 try {
-                    ipAdress = InetAddress.getByName(payload.toString().replace(searchResetHeaderString, ""));
+                    ipAdress = InetAddress.getByName(payload.toString().replace(SpringAR.searchResetHeaderString, ""));
                     snd_packet.setAddress(ipAdress);
-                    stillConnected = true;
+
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-
             }
         }
 
