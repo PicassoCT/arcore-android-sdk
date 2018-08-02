@@ -1,17 +1,27 @@
 package com.google.ar.core.examples.app.common.tcpClient;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 
 import com.google.ar.core.examples.app.common.helpers.SpringAR;
 
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 
@@ -19,14 +29,14 @@ import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
 public class Server {
-    //Size of the Transfered Datagrams
-    private int MAX_UDP_DATAGRAM_RCV_LEN;
+     //Server Port
 
-    //Server Port
-    private int UDP_SERVER_PORT = 8090;
-    private String defaultHostIP = comonUtils.getIPAddress(true);
+    private String defaultHostIP = "192.168.178.20" ;
+    InetAddress   defaultHostIPAddress;
+    private String deviceIP = comonUtils.getIPAddress(true);
+    InetAddress   deviceIPAddress;
 
-    InetAddress ipAdress = null;
+    InetAddress hostIpAddress = null;
     byte[][] rcv_message;
 
     //Message Zähler - 0 bedeutet die Verbindung wurde reinitialisiert
@@ -49,25 +59,17 @@ public class Server {
         this.context = context;
 
         try {
-            ipAdress = InetAddress.getByName(defaultHostIP);
+
+            defaultHostIPAddress = InetAddress.getByName(defaultHostIP);
+            deviceIP = comonUtils.getIPAddress(true);
+            defaultHostIPAddress = InetAddress.getByName(deviceIP);
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
 
-        MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes
-                + 25 // IHDR chunk
-                + 12 // IDAT chunk (assuming only one IDAT chunk)
-                + Resources.getSystem().getDisplayMetrics().heightPixels //pixels
-                * (1 // filter byte for each row
-                + (Resources.getSystem().getDisplayMetrics().widthPixels // pixels
-                * 3 // Red, blue, green color samples
-                * 2 // 16 bits per color sample
-        ))
-                + 6 // zlib compression overhead
-                + 2 // deflate overhead
-                + 12; // IEND chunk;
 
-        rcv_message = new byte[2][MAX_UDP_DATAGRAM_RCV_LEN];
+        rcv_message = new byte[2][SpringAR.MAX_UDP_DATAGRAM_RCV_LEN];
         this.datagramReciever = new DatagramReciever();
         watchDog = new Stopwatch();
         watchDog.start();
@@ -89,7 +91,7 @@ public class Server {
         private String datagramToSend = "";
         private boolean newDatagramToSend = false;
         private DatagramPacket snd_packet;
-        int TIME_OF_FRAME_IN_MS = 30;
+
         DatagramSocket socket = null;
 
         //Buffer gettters and setters
@@ -107,6 +109,7 @@ public class Server {
 
         //Management Communication Headers
         final byte[] searchDataHeaderByte = SpringAR.searchDataHeader.getBytes();
+        final byte[] recieveHostReplyHeaderByte = SpringAR.recieveHostReplyHeader.getBytes(); //Ipadress
         final byte[] searchResetHeaderByte = SpringAR.searchResetHeaderString.getBytes(); //Ipadress
 
         final byte[] broadcastHeaderByte = (SpringAR.broadcasteHeader + comonUtils.getIPAddress(true)).getBytes();
@@ -124,7 +127,7 @@ public class Server {
             String delMeOldMessage = new String();
 
             try {
-                socket = new DatagramSocket(UDP_SERVER_PORT);
+                socket = new DatagramSocket(SpringAR.UDP_SERVER_PORT);
 
                 while (true) {
                     broadcastDevice();
@@ -137,7 +140,7 @@ public class Server {
                         {
                             // Receiving
                             boolean NewMessageArrived = true;
-                            socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
+                            socket.setSoTimeout(SpringAR.TIME_OF_FRAME_IN_MS);
                             try {
                                 socket.receive(rcv_packet);
                             } catch (SocketTimeoutException e) {
@@ -160,18 +163,18 @@ public class Server {
                                 stillConnected = true;
                                 packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
                             } else {
-                                handleManagedTraffic(rcv_message[getReadBuffer()]);
+                                connectionStateMachine(rcv_message[getReadBuffer()]);
                             }
                         }
 
                         switchBuffer();
                         { //callback to update Buffer
 
-                            if (newDatagramToSend && ipAdress != null) {
+                            if (newDatagramToSend && hostIpAddress != null) {
                                 Log.d("Server:Run", "Run sending");
                                 byte[] snd_message = datagramToSend.getBytes();
 
-                                snd_packet = new DatagramPacket(snd_message, snd_message.length, ipAdress, UDP_SERVER_PORT);
+                                snd_packet = new DatagramPacket(snd_message, snd_message.length, hostIpAddress, SpringAR.UDP_SERVER_PORT);
                                 socket.send(snd_packet);
                                 Log.d("Server:Run", "SND: " + datagramToSend);
                                 newDatagramToSend = false;
@@ -204,43 +207,62 @@ public class Server {
         }
 
         // handles management traffic like configurstion files
-        private void handleManagedTraffic(byte[] payload) {
+        private void connectionStateMachine(byte[] payload) {
             if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1) {
+                messageCounter = 0;
+                stillConnected = false;
+                hostIpAddress= null;
+
+            }
+
+            if (comonUtils.indexOf(payload, recieveHostReplyHeaderByte) != -1) {
                 messageCounter = 0;
                 stillConnected = false;
 
                 try {
-                    ipAdress = InetAddress.getByName(payload.toString().replace(SpringAR.searchResetHeaderString, ""));
-                    snd_packet.setAddress(ipAdress);
+                    hostIpAddress = InetAddress.getByName(payload.toString().replace(SpringAR.recieveHostReplyHeader , ""));
+                    snd_packet.setAddress(hostIpAddress);
+                    deviceIPAddress = findIPnearby(hostIpAddress.toString());
 
+                    comonUtils.setStaticIP(context, deviceIPAddress);
+
+                    //send Configuration Message
+                     setSendToSpringMessage(SpringAR.formConfigurationMessage());
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
             }
         }
 
+        public InetAddress findIPnearby(String ip){
+
+        }
+
         public void broadcastDevice() {
-            Log.d("Server:Run", "Broadcast");
+
             try {
                 //activate broadcast
                 socket.setBroadcast(true);
-                snd_packet = new DatagramPacket( (broadcastHeaderString + comonUtils.getIPAddress(true)).getBytes() ,
+                snd_packet = new DatagramPacket( (SpringAR.broadcasteHeader + comonUtils.getIPAddress(true)).getBytes() ,
                                                 broadcastHeaderByte.length,
-                                                InetAddress.getByName("255.255.255.255"),
-                                                UDP_SERVER_PORT);
+                                                 comonUtils.getBroadcastAddress(context),
+                                                SpringAR.UDP_SERVER_PORT);
+
+                Log.d("Server:Run", "Broadcast "+SpringAR.broadcasteHeader + comonUtils.getIPAddress(true));
                 socket.send(snd_packet);
 
                 DatagramPacket rcv_packet = new DatagramPacket(rcv_message[1], rcv_message[1].length);
 
                 // Receiving
                 try {
-                    socket.setSoTimeout(TIME_OF_FRAME_IN_MS);
+                    socket.setSoTimeout(SpringAR.TIME_OF_FRAME_IN_MS);
                     socket.receive(rcv_packet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                socket.setBroadcast(false);
 
-                handleManagedTraffic(rcv_message[1]);
+                connectionStateMachine(rcv_message[1]);
 
                 try {
                     Thread.sleep(1000);
@@ -252,6 +274,8 @@ public class Server {
                 e.printStackTrace();
             }
         }
+
+
 
 
         public void kill() {
@@ -266,5 +290,7 @@ public class Server {
             messageCounter++;
             return newDatagramToSend;
         }
+
+
     }
 }

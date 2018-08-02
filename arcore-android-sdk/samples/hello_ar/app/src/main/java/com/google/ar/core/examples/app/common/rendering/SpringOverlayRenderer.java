@@ -18,6 +18,7 @@ import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.app.common.helpers.SpringAR;
+import com.google.ar.core.examples.app.common.helpers.comonUtils;
 import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
 import com.google.ar.core.examples.app.common.tcpClient.TwinBuffer;
@@ -228,9 +229,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             tcpConnection = new Server(context,this);
         }
 
-        if (tcpConnection.messageCounter == 0){
-            tcpConnection.datagramReciever.setSendToSpringMessage(formConfigurationMessage());
-        }
+
 
         if ((camera != null) && (groundAnchor != null) &&  tcpConnection.messageCounter != 0) {
 
@@ -247,18 +246,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         }
     }
 
-    private String formConfigurationMessage() {
 
-        Log.d(TAG, "Server formConfigurationMessage called");
-
-        return  SpringAR.sendCFGHeader +
-                "MODEL=" + Build.MODEL + SpringAR.seperator +//devicename
-                "DISPLAYWIDTH=" + Resources.getSystem().getDisplayMetrics().widthPixels + SpringAR.seperator +// screen width
-                "DISPLAYHEIGTH="+ Resources.getSystem().getDisplayMetrics().heightPixels + SpringAR.seperator +// screen heigth
-                "DISPLAYDIVIDE="+ 50 + SpringAR.seperator;// divider
-
-
-    }
 
     private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
