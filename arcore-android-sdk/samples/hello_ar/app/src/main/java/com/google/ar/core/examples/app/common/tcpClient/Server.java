@@ -29,12 +29,12 @@ import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
 public class Server {
-     //Server Port
+    //Server Port
 
-    private String defaultHostIP = "192.168.178.20" ;
-    InetAddress   defaultHostIPAddress;
+    private String defaultHostIP = "192.168.178.20";
+    InetAddress defaultHostIPAddress;
     private String deviceIP = comonUtils.getIPAddress(true);
-    InetAddress   deviceIPAddress;
+    InetAddress deviceIPAddress;
 
     InetAddress hostIpAddress = null;
     byte[][] rcv_message;
@@ -42,19 +42,17 @@ public class Server {
     //Message Zähler - 0 bedeutet die Verbindung wurde reinitialisiert
     public int messageCounter = 0;
 
-    //Basically Watchdogvariable- every arriving Datagram resets the timer
-    public boolean stillConnected = true;
-
     public DatagramReciever datagramReciever = null;
 
     //Callback to return recieved data to the corresponding thread
     IPackageRecivedCallback packageRecipient;
     Context context;
     Stopwatch watchDog;
+    SpringAR.comStates State;
 
     //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
-        stillConnected = false;
+        State = SpringAR.comStates.STATE_broadCastHeader;
         this.packageRecipient = packageRecipient;
         this.context = context;
 
@@ -112,7 +110,7 @@ public class Server {
         final byte[] recieveHostReplyHeaderByte = SpringAR.recieveHostReplyHeader.getBytes(); //Ipadress
         final byte[] searchResetHeaderByte = SpringAR.searchResetHeaderString.getBytes(); //Ipadress
 
-        final byte[] broadcastHeaderByte = (SpringAR.broadcasteHeader + comonUtils.getIPAddress(true)).getBytes();
+        final byte[] broadcastHeaderByte = (SpringAR.broadcasteHeader ).getBytes();
 
         private boolean isDataMessage(byte[] payload) {
             return (-1 != comonUtils.indexOf(payload, searchDataHeaderByte));
@@ -207,35 +205,44 @@ public class Server {
         }
 
         // handles management traffic like configurstion files
-        private void connectionStateMachine(byte[] payload) {
-            if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1) {
+        private void connectionStateMachine(byte[] payload) throws UnknownHostException {
+            if (comonUtils.indexOf(payload, searchResetHeaderByte) != -1 || (stillConnected && (comonUtils.indexOf(payload, broadcastHeaderByte) != -1)) ) {
                 messageCounter = 0;
                 stillConnected = false;
-                hostIpAddress= null;
+                hostIpAddress = null;
+                return;
 
             }
 
             if (comonUtils.indexOf(payload, recieveHostReplyHeaderByte) != -1) {
                 messageCounter = 0;
                 stillConnected = false;
+                Log.d("connectionStateMachine", "recieveHostReplyHeader");
 
-                try {
-                    hostIpAddress = InetAddress.getByName(payload.toString().replace(SpringAR.recieveHostReplyHeader , ""));
-                    snd_packet.setAddress(hostIpAddress);
-                    deviceIPAddress = findIPnearby(hostIpAddress.toString());
+                 //hostIpAddress = InetAddress.getByName(payload.toString().replace(SpringAR.recieveHostReplyHeader, ""));
+                 //snd_packet.setAddress(hostIpAddress);
+                 //deviceIPAddress = findIPnearby(hostIpAddress.toString());
 
-                    comonUtils.setStaticIP(context, deviceIPAddress);
+                //comonUtils.setStaticIP(context, deviceIPAddress);
 
-                    //send Configuration Message
-                     setSendToSpringMessage(SpringAR.formConfigurationMessage());
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
+                //send Configuration Message
+                setSendToSpringMessage(SpringAR.formConfigurationMessage());
+                return;
             }
         }
 
-        public InetAddress findIPnearby(String ip){
+        public InetAddress findIPnearby(String ip) {
+            String[] parts = ip.split(".");
+            int localIP = Integer.valueOf(parts[3]);
+            if ((localIP % 10) > 4) localIP--;
+            else localIP++;
+            try {
+                return InetAddress.getByName(parts[0] + "." + parts[1] + "." + parts[2] + "." + String.valueOf(localIP));
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
 
+            return null;
         }
 
         public void broadcastDevice() {
@@ -243,12 +250,12 @@ public class Server {
             try {
                 //activate broadcast
                 socket.setBroadcast(true);
-                snd_packet = new DatagramPacket( (SpringAR.broadcasteHeader + comonUtils.getIPAddress(true)).getBytes() ,
-                                                broadcastHeaderByte.length,
-                                                 comonUtils.getBroadcastAddress(context),
-                                                SpringAR.UDP_SERVER_PORT);
+                snd_packet = new DatagramPacket(broadcastHeaderByte,
+                        broadcastHeaderByte.length,
+                        comonUtils.getBroadcastAddress(context),
+                        SpringAR.UDP_SERVER_PORT);
 
-                Log.d("Server:Run", "Broadcast "+SpringAR.broadcasteHeader + comonUtils.getIPAddress(true));
+                Log.d("Server:Run", "Broadcast: " + SpringAR.broadcasteHeader);
                 socket.send(snd_packet);
 
                 DatagramPacket rcv_packet = new DatagramPacket(rcv_message[1], rcv_message[1].length);
@@ -274,8 +281,6 @@ public class Server {
                 e.printStackTrace();
             }
         }
-
-
 
 
         public void kill() {

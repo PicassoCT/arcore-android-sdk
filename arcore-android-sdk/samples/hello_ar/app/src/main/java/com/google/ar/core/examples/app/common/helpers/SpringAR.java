@@ -6,6 +6,17 @@ import android.util.Log;
 
 //Static Ressource class
 public  final  class SpringAR {
+
+  public  enum comStates {
+        STATE_broadCastHeader ,
+        STATE_waitForHostReply,
+        STATE_sendCFG,
+        STATE_resetCommunication,
+        STATE_recieveData
+
+
+
+    };
 //Protocol element strings
     public static final String seperator = ";";
     public static final String sendCFGHeader = "SPRINGAR;CFG;";
@@ -14,7 +25,7 @@ public  final  class SpringAR {
     public static final String searchResetHeaderString = "SPRINGAR;RESET;";
     public static final String broadcasteHeader = "SPRINGAR;BROADCAST;ARDEVICE";
     public static final String searchDataHeader = "SPRINGAR;DATA;";
-    public static final String recieveHostReplyHeader = "SPRINGAR;REPLY;HOSTIP=;";
+    public static final String recieveHostReplyHeader = "SPRINGAR;REPLY;HOSTIP=";
     public static final int UDP_SERVER_PORT = 8090;
     public static final  int TIME_OF_FRAME_IN_MS = 30;
     public static int MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes

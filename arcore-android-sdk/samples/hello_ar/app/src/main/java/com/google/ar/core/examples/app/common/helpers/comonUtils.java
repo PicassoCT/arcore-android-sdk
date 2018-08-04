@@ -179,7 +179,7 @@ public class comonUtils {
 
 
         try {
-            setIpAddress( InetAddress.getByName(staticIpToSet), 0,wifiConf);
+            setIpAddress( staticIpToSet, 0,wifiConf);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -192,15 +192,8 @@ public class comonUtils {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
-        }catch (UnknownHostException e) {
-            e.printStackTrace();
         }
 
-    }
-
-    public static void setIpAssignment(String assign , WifiConfiguration wifiConf)
-            throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException{
-        setEnumField(wifiConf, assign, "ipAssignment");
     }
 
     public static void setIpAddress(InetAddress addr, int prefixLength, WifiConfiguration wifiConf)
@@ -217,29 +210,6 @@ public class comonUtils {
         mLinkAddresses.add(linkAddress);
     }
 
-    public static void setGateway(InetAddress gateway, WifiConfiguration wifiConf)
-            throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException,
-            ClassNotFoundException, NoSuchMethodException, InstantiationException, InvocationTargetException{
-        Object linkProperties = getField(wifiConf, "linkProperties");
-        if(linkProperties == null)return;
-        Class routeInfoClass = Class.forName("android.net.RouteInfo");
-        Constructor routeInfoConstructor = routeInfoClass.getConstructor(new Class[]{InetAddress.class});
-        Object routeInfo = routeInfoConstructor.newInstance(gateway);
-
-        ArrayList mRoutes = (ArrayList)getDeclaredField(linkProperties, "mRoutes");
-        mRoutes.clear();
-        mRoutes.add(routeInfo);
-    }
-
-    public static void setDNS(InetAddress dns, WifiConfiguration wifiConf)
-            throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException{
-        Object linkProperties = getField(wifiConf, "linkProperties");
-        if(linkProperties == null)return;
-
-        ArrayList<InetAddress> mDnses = (ArrayList<InetAddress>)getDeclaredField(linkProperties, "mDnses");
-        mDnses.clear(); //or add a new dns address , here I just want to replace DNS1
-        mDnses.add(dns);
-    }
 
     public static Object getField(Object obj, String name)
             throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
@@ -257,10 +227,5 @@ public class comonUtils {
         return out;
     }
 
-    private static void setEnumField(Object obj, String value, String name)
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-        Field f = obj.getClass().getField(name);
-        f.set(obj, Enum.valueOf((Class<Enum>) f.getType(), value));
-    }
 
 }
