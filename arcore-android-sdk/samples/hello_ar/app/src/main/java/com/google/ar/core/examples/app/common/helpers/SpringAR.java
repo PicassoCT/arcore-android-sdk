@@ -2,17 +2,15 @@ package com.google.ar.core.examples.app.common.helpers;
 
 import android.content.res.Resources;
 import android.os.Build;
-import android.util.Log;
 
 //Static Ressource class
 public  final  class SpringAR {
 
   public  enum comStates {
         STATE_broadCastHeader ,
-        STATE_waitForHostReply,
         STATE_sendCFG,
         STATE_resetCommunication,
-        STATE_recieveData
+      STATE_sendRecieveData
 
 
 
@@ -20,12 +18,27 @@ public  final  class SpringAR {
 //Protocol element strings
     public static final String seperator = ";";
     public static final String sendCFGHeader = "SPRINGAR;CFG;";
-    public static final String sendCAMHeader = "SPRINGAR;DATA;";
+    public static final byte[] sendCFGHeaderByte = sendCFGHeader.getBytes();
 
-    public static final String searchResetHeaderString = "SPRINGAR;RESET;";
-    public static final String broadcasteHeader = "SPRINGAR;BROADCAST;ARDEVICE";
-    public static final String searchDataHeader = "SPRINGAR;DATA;";
+    public static final String sendCAMHeader = "SPRINGAR;DATA;";
+    public static final byte[] sendCAMHeaderByte = sendCAMHeader.getBytes();
+
+    public static final String sendBroadcasteHeader = "SPRINGAR;BROADCAST;ARDEVICE;";
+    public static final byte[] sendBroadcasteHeaderByte = sendBroadcasteHeader.getBytes();
+
     public static final String recieveHostReplyHeader = "SPRINGAR;REPLY;HOSTIP=";
+    public static final byte[] recieveHostReplyHeaderByte = recieveHostReplyHeader.getBytes();
+
+    public static final String recieveResetHeader = "SPRINGAR;RESET;";
+    public static final byte[] recieveResetHeaderByte = recieveResetHeader.getBytes();
+
+    public static final String recieveDataHeader = "SPRINGAR;DATA;";
+    public static final byte[] recieveDataHeaderByte = SpringAR.recieveDataHeader.getBytes();
+
+
+
+
+
     public static final int UDP_SERVER_PORT = 8090;
     public static final  int TIME_OF_FRAME_IN_MS = 30;
     public static int MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes

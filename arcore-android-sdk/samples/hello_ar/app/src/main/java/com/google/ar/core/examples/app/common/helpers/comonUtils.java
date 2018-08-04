@@ -227,5 +227,19 @@ public class comonUtils {
         return out;
     }
 
+    public InetAddress findIPnearby(String ip) {
+        String[] parts = ip.split(".");
+        int localIP = Integer.valueOf(parts[3]);
+        if ((localIP % 10) > 4) localIP--;
+        else localIP++;
+        try {
+            return InetAddress.getByName(parts[0] + "." + parts[1] + "." + parts[2] + "." + String.valueOf(localIP));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 
 }
