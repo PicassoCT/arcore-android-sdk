@@ -31,13 +31,15 @@ public class Server {
     //Message Zähler - 0 bedeutet die Verbindung wurde reinitialisiert
     public int messageCounter = 0;
 
+
     public DatagramReciever datagramReciever = null;
 
     //Callback to return recieved data to the corresponding thread
     IPackageRecivedCallback packageRecipient;
     Context context;
     Stopwatch watchDog;
-    SpringAR.comStates State;
+     SpringAR.comStates  State;
+    public  String  getCurrentStateMachineState() {return State.name();}
 
     //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
@@ -175,6 +177,7 @@ public class Server {
             if (comonUtils.indexOf(payload[1], SpringAR.recieveResetHeaderByte ) != -1) {State = SpringAR.comStates.STATE_resetCommunication;}
             Log.d("ConnectionStateMachine","State: "+ State.name());
             switch (State) {
+
                 case STATE_resetCommunication: {
                     messageCounter = 0;
                     hostIpAddress = null;
@@ -185,7 +188,7 @@ public class Server {
 
                 case STATE_broadCastHeader: {
                     if (comonUtils.indexOf(payload[1], SpringAR.recieveHostReplyHeaderByte) != -1) {
-                        socket.setBroadcast(false);
+                        //socket.setBroadcast(false);
                         State = SpringAR.comStates.STATE_sendCFG;
                         return;
                     }
@@ -202,7 +205,7 @@ public class Server {
                 }
 
                 case STATE_sendCFG: {
-                    if (-1 != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
+                    if (-1 != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveHostReplyHeaderByte)) {
                         State = SpringAR.comStates.STATE_sendRecieveData;
                         return;
                      }
@@ -226,6 +229,7 @@ public class Server {
         public void kill() {
           socket.close();
         }
+
 
         public boolean setSendToSpringMessage(String toSend) {
             if (newDatagramToSend) return false;

@@ -48,7 +48,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
 
     // Server tcpConnection;
-    Server tcpConnection = null;
+    static Server tcpConnection = null;
     Context context;
 
     //Texture data
@@ -384,6 +384,10 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
 
+    public static String getLastMessage() {
+
+        return "Comstate Machine State: "+ tcpConnection.getCurrentStateMachineState();
+    }
 }
 
 

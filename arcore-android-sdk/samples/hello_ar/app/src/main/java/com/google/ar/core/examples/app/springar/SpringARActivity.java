@@ -379,6 +379,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             springOverlayRenderer.update(camera, groundAnchor);
             springOverlayRenderer.drawOverlay(viewmtx,  projmtx);
 
+            messageSnackbarHelper.showMessage(this, SpringOverlayRenderer.getLastMessage());
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
             Log.e(TAG, "Exception on the OpenGL thread", t);
