@@ -3,14 +3,12 @@ package com.google.ar.core.examples.app.common.rendering;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.os.Build;
 import android.util.Log;
 
 import com.google.ar.core.Anchor;
@@ -18,7 +16,6 @@ import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.app.common.helpers.SpringAR;
-import com.google.ar.core.examples.app.common.helpers.comonUtils;
 import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
 import com.google.ar.core.examples.app.common.tcpClient.TwinBuffer;
@@ -55,7 +52,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     private int[] textures = new int[1];
     private static final float[] uvwTex = new float[]{
             0.0f, -1.00f,
-           0.0f, 0.0f,
+            0.0f, 0.0f,
             1.0f, 0.0f,
             1.0f, -1.0f,
     };
@@ -69,18 +66,18 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     static final int COORDS_PER_VERTEX = 4;
     private FloatBuffer vertexBuffer;
     static float vertices[] = {   // in counterclockwise order:
-            -1.0f, 1.0f, 0.0f,1.0f,
-            -1.00f, -1.0f, 0.0f,1.0f,
-            1.0f, -1.0f, 0.0f,1.0f,
-            1.0f, 1.0f, 0.0f,1.0f,
+            -1.0f, 1.0f, 0.0f, 1.0f,
+            -1.00f, -1.0f, 0.0f, 1.0f,
+            1.0f, -1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
     };
 
-    private final short [] drawOrder = new short[]{0, 1, 2, 2, 3, 0};
+    private final short[] drawOrder = new short[]{0, 1, 2, 2, 3, 0};
     private ShortBuffer drawListBuffer;
     ByteBuffer dlb;
     private final int vertexStride = COORDS_PER_VERTEX * 4;
     private final int vertexCount = vertices.length / COORDS_PER_VERTEX;
-    private boolean boolHoloStyle =false;
+    private boolean boolHoloStyle = false;
 
 
     //Takes a loaded bitmap from a callback,
@@ -90,7 +87,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         Log.d(TAG, "Spring OverlayRender bindTexture called");
 
         android.graphics.Matrix flip = new android.graphics.Matrix();
-        flip.postScale(-1f,-1f);
+        flip.postScale(-1f, -1f);
         Bitmap b = null;
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -115,16 +112,15 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         bitmap.recycle();
 
 
-
     }
 
     public void drawFirstTimeLogo(Context context) {
         // first, try to generate a uvwTex handle
         android.graphics.Matrix flip = new android.graphics.Matrix();
-        flip.postScale(-1f,-1f);
+        flip.postScale(-1f, -1f);
         Bitmap b = null;
         try {
-            b = BitmapFactory.decodeStream( context.getAssets().open("models/springoverlayraw.png"));
+            b = BitmapFactory.decodeStream(context.getAssets().open("models/springoverlayraw.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -177,8 +173,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         int[] compileStatus = new int[1];
         GLES20.glGetShaderiv(fragmentShader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
 
-        if (compileStatus[0] == 0)
-        {
+        if (compileStatus[0] == 0) {
             String error = GLES20.glGetShaderInfoLog(fragmentShader);
             GLES20.glDeleteShader(fragmentShader);
             throw new RuntimeException("Error compiling shader: " + error);
@@ -198,13 +193,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         vertexBuffer.put(vertices);
         vertexBuffer.position(0);
 
-        dlb= ByteBuffer.allocateDirect (
+        dlb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 2 bytes per short)
                 drawOrder.length * 2);
-        dlb.order (ByteOrder.nativeOrder ());
-        drawListBuffer = dlb.asShortBuffer ();
-        drawListBuffer.put (drawOrder);
-        drawListBuffer.position (0);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
 
         //Prepare the uvw data
         byteBuf = ByteBuffer.allocateDirect(uvwTex.length * 4);
@@ -226,26 +221,23 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     public void update(Camera camera, Anchor groundAnchor) {
         //Log.d(TAG, "Spring OverlayRender Update called");
         if (tcpConnection == null) {
-            tcpConnection = new Server(context,this);
+            tcpConnection = new Server(context, this);
         }
 
-
-
-        if ((camera != null) && (groundAnchor != null) &&  tcpConnection.messageCounter != 0) {
+        if ((camera != null) && (groundAnchor != null) && this.tcpConnection.State == SpringAR.comStates.STATE_sendRecieveData) {
 
             //Get Camera Position relative to MapCenter
             if (camera.getTrackingState() == TrackingState.TRACKING) {
                 tcpConnection.datagramReciever.setSendToSpringMessage(
-                                buildGroundAnchorMessage(camera.getPose(),
-                                                    getMapCenterFromAnchor(groundAnchor)));
+                        buildGroundAnchorMessage(camera.getPose(),
+                                getMapCenterFromAnchor(groundAnchor)));
             } else {
                 tcpConnection.datagramReciever.setSendToSpringMessage(
-                            buildGroundAnchorMessage(camera.getDisplayOrientedPose(),
-                                                     getMapCenterFromAnchor(groundAnchor)));
+                        buildGroundAnchorMessage(camera.getDisplayOrientedPose(),
+                                getMapCenterFromAnchor(groundAnchor)));
             }
         }
     }
-
 
 
     private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
@@ -262,10 +254,8 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
 
-    public void tearDown()
-    {
-        if (overlayProgram != -1)
-        {
+    public void tearDown() {
+        if (overlayProgram != -1) {
             GLES20.glDeleteProgram(overlayProgram);
             GLES20.glDeleteShader(vertexShader);
             GLES20.glDeleteShader(fragmentShader);
@@ -288,12 +278,11 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
         GLES20.glEnable(GLES20.GL_BLEND);
         if (boolHoloStyle)
-            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_CONSTANT_COLOR);
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_CONSTANT_COLOR);
         else
-            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
-
 
 
         //VertexPositions
@@ -313,13 +302,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         ShaderUtil.checkGLError(TAG, "Getting Camera Matrix Handle");
 
         //Bind  UVW-Texture Coordinates to Shader Variable Handle
-        uvwTextureCoord = GLES20.glGetAttribLocation(overlayProgram,"uvwTextureCoord");
+        uvwTextureCoord = GLES20.glGetAttribLocation(overlayProgram, "uvwTextureCoord");
         if (uvwTextureCoord < 0)
             ShaderUtil.checkGLError(TAG, "Loading uvwTextureCoord Handle");
 
         GLES20.glVertexAttribPointer(
                 uvwTextureCoord,
-                COORDS_PER_TEXTURE ,
+                COORDS_PER_TEXTURE,
                 GLES20.GL_FLOAT,
                 false,
                 textureStride,
@@ -328,14 +317,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
 
         //Bind Sampler to texture[0]
-        uTextureHandle = GLES20.glGetUniformLocation(overlayProgram,"TextureHandle");
+        uTextureHandle = GLES20.glGetUniformLocation(overlayProgram, "TextureHandle");
         GLES20.glUniform1i(uTextureHandle, 0);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                 drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT,
                 drawListBuffer);
-
 
 
         GLES20.glDisableVertexAttribArray(mPositionHandle);
@@ -357,9 +345,8 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
 
-
     @Override
-    public void callback(byte [] array, int length ) {
+    public void callback(byte[] array, int length) {
         //Necessary to avoid  ConcurrentModification error,
         // which means you are trying to access the rendering pipeline from a different thread
         // than the OpenGL is rendered on.
@@ -368,25 +355,27 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
          * glSurfaceView.queueEvent(
          *
          * */
-        buffers.setTexture(buffers.getWriteBufferIndex(),array);
+        buffers.setTexture(buffers.getWriteBufferIndex(), array);
 
-            int id = context.getResources().getIdentifier("glSurfaceView","id", context.getPackageName());
-            if (id!= 0) {
-                ((GLSurfaceView) ((Activity) context).findViewById(id)).queueEvent(new Runnable() {
-                    @Override
-                    public void run() {
-                        bindTexture(0, context, buffers.getDrawBuffer());
-                    }
-                });
-            }
-            buffers.switchBuffer();
+        int id = context.getResources().getIdentifier("glSurfaceView", "id", context.getPackageName());
+        if (id != 0) {
+            ((GLSurfaceView) ((Activity) context).findViewById(id)).queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    bindTexture(0, context, buffers.getDrawBuffer());
+                }
+            });
+        }
+        buffers.switchBuffer();
 
     }
 
 
-    public static String getLastMessage() {
+    public static String getMachineStateAsString() {
 
-        return "Comstate Machine State: "+ tcpConnection.getCurrentStateMachineState();
+        //    return " | Data:" +tcpConnection.datagramReciever.dbg_message;
+
+        return "State: " + tcpConnection.getCurrentStateMachineState();
     }
 }
 

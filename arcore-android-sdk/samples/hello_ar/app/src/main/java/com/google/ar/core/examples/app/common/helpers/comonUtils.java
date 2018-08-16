@@ -17,8 +17,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class comonUtils {
+
+    public static int indexOf(byte[] outerArray, byte[] smallerArray) {
+       return  indexOf(outerArray, smallerArray, 0);
+    }
+
     //Find a smaller Array in a larger byte array
     /**
      * Convert byte array to hex string
@@ -26,8 +32,8 @@ public class comonUtils {
      * @param smallerArray searched for array
      * @return -1 on not found, else position as int
      */
-    public static int indexOf(byte[] outerArray, byte[] smallerArray) {
-        for(int i = 0; i < outerArray.length - smallerArray.length+1; ++i) {
+    public static int indexOf(byte[] outerArray, byte[] smallerArray, int startOffset) {
+        for(int i = startOffset; i < outerArray.length - smallerArray.length+1; ++i) {
             boolean found = true;
             for(int j = 0; j < smallerArray.length; ++j) {
                 if (outerArray[i+j] != smallerArray[j]) {
@@ -226,6 +232,20 @@ public class comonUtils {
         Object out = f.get(obj);
         return out;
     }
+
+    public static int parseIp(String address) {
+        int result = 0;
+
+        // iterate over each octet
+        for(String part : address.split(Pattern.quote("."))) {
+            // shift the previously parsed bits over by 1 byte
+            result = result << 8;
+            // set the low order bits to the current octet
+            result |= Integer.parseInt(part);
+        }
+        return result;
+    }
+
 
     public InetAddress findIPnearby(String ip) {
         String[] parts = ip.split(".");
