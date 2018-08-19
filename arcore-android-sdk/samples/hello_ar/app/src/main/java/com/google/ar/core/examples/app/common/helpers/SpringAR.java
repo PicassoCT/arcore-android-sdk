@@ -26,7 +26,7 @@ public  final  class SpringAR {
     //Protocol element strings
     public static final String seperator = ";";
 
-    public static final String sendResetHeader = "SPRINGAR;RESET;";
+    public static final String sendResetHeader = "SPRINGAR;RESET=DEVICE;";
     public static final byte[] sendResetHeaderByte = sendResetHeader.getBytes();
 
     public static final String sendBroadcasteHeader = "SPRINGAR;BROADCAST;ARDEVICE;";
@@ -44,7 +44,7 @@ public  final  class SpringAR {
     public static final String recieveCFGHeader = "SPRINGAR;CFG;RECIEVED;";
     public static final byte[] recieveCFGHeaderByte = recieveCFGHeader.getBytes();
 
-    public static final String recieveResetHeader = "SPRINGAR;RESET;";
+    public static final String recieveResetHeader = "SPRINGAR;RESET=HOST;";
     public static final byte[] recieveResetHeaderByte = recieveResetHeader.getBytes();
 
     public static final String recieveDataHeader = "SPRINGAR;DATA=";
