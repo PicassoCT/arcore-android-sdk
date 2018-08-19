@@ -7,17 +7,23 @@ import android.os.Build;
 public  final  class SpringAR {
 
     public static long watchDogTimeOutInMs = 30 * 1000;
+    public static long snackBarUpdateTimeInMs =  1000;
 
     public  enum comStates {
         STATE_broadCastHeader ,
         STATE_sendCFG,
         STATE_resetCommunication,
-      STATE_sendRecieveData
+        STATE_sendRecieveData
 
 
 
     };
-//Protocol element strings
+
+
+    public static final String protocollDebugLogPrefix = "DBG_PROTOCOLL";
+    public static final String dataDebugLogPrefix = "DBG_DATA";
+
+    //Protocol element strings
     public static final String seperator = ";";
 
     public static final String sendResetHeader = "SPRINGAR;RESET;";
@@ -31,8 +37,6 @@ public  final  class SpringAR {
 
     public static final String sendCAMHeader = "SPRINGAR;DATA;";
     public static final byte[] sendCAMHeaderByte = sendCAMHeader.getBytes();
-
-
 
     public static final String recieveHostReplyHeader = "SPRINGAR;REPLY;HOSTIP=";
     public static final byte[] recieveHostReplyHeaderByte = recieveHostReplyHeader.getBytes();
@@ -51,10 +55,9 @@ public  final  class SpringAR {
 
 
 
-
-
     public static final int UDP_SERVER_PORT = 9000;
     public static final  int TIME_OF_FRAME_IN_MS = 30;
+    public static final int TIME_OUT_IN_BROADCAST = 1000;
     public static int MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes
             + 25 // IHDR chunk
             + 12 // IDAT chunk (assuming only one IDAT chunk)

@@ -16,6 +16,7 @@
 
 package com.google.ar.core.examples.app.springar;
 
+import android.app.Activity;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -378,7 +379,13 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
             springOverlayRenderer.update(camera, groundAnchor);
             springOverlayRenderer.drawOverlay(viewmtx,  projmtx);
 
-          //  messageSnackbarHelper.showMessage(this, SpringOverlayRenderer.getMachineStateAsString());
+          //  if (springOverlayRenderer.stateChangeHappend())
+            //    messageSnackbarHelper.showMessage(this, springOverlayRenderer.getMachineStateAsString());
+              if (springOverlayRenderer.newDataRecieved()) springOverlayRenderer.logRecievedData();
+              if (springOverlayRenderer.onProtocollStateChange())
+              {
+                      messageSnackbarHelper.showMessage( this, springOverlayRenderer.getMachineStateAsString() );
+              }
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
             Log.e(TAG, "Exception on the OpenGL thread", t);

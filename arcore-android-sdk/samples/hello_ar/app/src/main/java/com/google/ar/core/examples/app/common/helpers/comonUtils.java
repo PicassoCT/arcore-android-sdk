@@ -159,7 +159,18 @@ public class comonUtils {
         return "";
     }
 
+    public static InetAddress getScopedBroadcastAdress(Context context) throws UnknownHostException {
+        String myIpAddress = comonUtils.getIPAddress(true);
+        String segments[] = myIpAddress.split(".");
+        return  InetAddress.getByName(segments[0]+"."+
+                segments[1]+"."+
+                segments[2]+"."+
+                "255");
+
+    }
+
    public static InetAddress getBroadcastAddress(Context context) throws IOException {
+
         WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
         // handle null somehow

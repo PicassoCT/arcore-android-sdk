@@ -15,10 +15,13 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
+import com.google.ar.core.examples.app.common.helpers.SnackbarHelper;
 import com.google.ar.core.examples.app.common.helpers.SpringAR;
+import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
 import com.google.ar.core.examples.app.common.tcpClient.Server;
 import com.google.ar.core.examples.app.common.tcpClient.TwinBuffer;
+
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,10 +45,10 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     int mPositionHandle;
     int mMVPMatrixHandle;
     int uTextureHandle;
+    static  Stopwatch updateSnackbarEveryNthSecondStopWatch;
 
 
-    // Server tcpConnection;
-    static Server tcpConnection = null;
+    static Server tcpConnection ;
     Context context;
 
     //Texture data
@@ -370,12 +373,32 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     }
 
+    public static void logRecievedData() {
+        Log.d(SpringAR.protocollDebugLogPrefix,  tcpConnection.datagramReciever.dbg_message );
+    }
+    static String oldData;
+    public static boolean newDataRecieved() {
+        if (!tcpConnection.datagramReciever.dbg_message.equalsIgnoreCase(oldData)){
+            oldData = tcpConnection.datagramReciever.dbg_message;
+            return true;
+        }
+    return false;
+    }
 
     public static String getMachineStateAsString() {
-
-        //    return " | Data:" +tcpConnection.datagramReciever.dbg_message;
-
         return "State: " + tcpConnection.getCurrentStateMachineState();
+    }
+
+    static String oldState;
+    public static boolean onProtocollStateChange() {
+        if (!tcpConnection.getCurrentStateMachineState().equalsIgnoreCase(oldState)) {
+            oldState= tcpConnection.getCurrentStateMachineState();
+            return true;
+        }
+
+        return false;
+
+
     }
 }
 
