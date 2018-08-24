@@ -83,5 +83,13 @@ public  final  class SpringAR {
 
     }
 
+   public  enum testCases {
+        broadcastrecieve,
+        broadcastsend,
+       bindsend,
+       bindrecieve
+
+    }
+
 }
 
