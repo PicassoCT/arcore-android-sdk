@@ -1,0 +1,112 @@
+ /*
+        private void testLoop() throws IOException {
+        int modeSelector= 0;
+            DatagramSocket sendSocket = null;
+            DatagramSocket recieveSocket = null;
+
+
+        while (true) {
+            SpringAR.testCases toTest = SpringAR.testCases.bindsend;
+            closeSocket(sendSocket);
+            closeSocket(recieveSocket);
+
+            modeSelector = (modeSelector+1)%4;
+                switch (modeSelector){
+                    case 0:  toTest = SpringAR.testCases.broadcastsend;break;
+                    case 1: toTest = SpringAR.testCases.bindsend;break;
+                    case 2: toTest = SpringAR.testCases.broadcastrecieve;break;
+                    case 3: toTest = SpringAR.testCases.bindrecieve;break;
+
+                }
+
+
+
+            InetSocketAddress address;
+
+            switch (toTest) {
+
+                case broadcastrecieve:
+                    address = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 9000);
+                    recieveSocket = new DatagramSocket(null);
+                    recieveSocket.setSoTimeout(30);
+                    recieveSocket.bind(address);
+
+                    break;
+                case broadcastsend:
+                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
+                    sendSocket = new DatagramSocket(null);
+                    sendSocket.setSoTimeout(30);
+                    sendSocket.setBroadcast(true);
+                    sendSocket.bind(address);
+                    break;
+
+                case bindsend:
+                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
+                    sendSocket = new DatagramSocket(null);
+                    sendSocket.setSoTimeout(30);
+                    sendSocket.bind(address);
+                    InetSocketAddress remoteAddress = new InetSocketAddress(InetAddress.getByName("192.168.178.20"), 9000);
+                    sendSocket.connect(remoteAddress);
+                    sendSocket.setBroadcast(false);
+                    break;
+
+                case bindrecieve:
+                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
+                    recieveSocket = new DatagramSocket(null);
+                    recieveSocket.setSoTimeout(30);
+                    recieveSocket.bind(address);
+                    InetSocketAddress remoteAddressr = new InetSocketAddress(InetAddress.getByName("192.168.178.20"), 9000);
+                    sendSocket.connect(remoteAddressr);
+                    recieveSocket.setBroadcast(false);
+                    break;
+            }
+            boolean boolTestCaseDone = false;
+            while (!boolTestCaseDone) {
+                Log.d(SpringAR.protocollDebugLogPrefix, "TestLoop in testcase : "+ toTest.name()+ " :");
+                String dbg_message;
+                if (recieveSocket != null) {
+                    try {
+                        DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message[writeBuffer].length);
+                        recieveSocket.receive(rcv_packet);
+                        dbg_message = new String(rcv_message[writeBuffer], 0, rcv_packet.getLength(), "US-ASCII");
+                        Log.d(SpringAR.dataDebugLogPrefix, "" + rcv_packet.getAddress().getHostAddress() + ": " + dbg_message.trim() + " via ");
+                        boolTestCaseDone=true;
+                    } catch (SocketTimeoutException e) {
+
+                    }
+                }
+
+                if (sendSocket != null ) {
+                    try {
+                        DatagramPacket snd_packet = null;
+                        switch (toTest) {
+                            case broadcastsend:
+                             snd_packet = new DatagramPacket(("Testmessage send by " + toTest.name() + " socket").getBytes(),
+                                                              ("Testmessage send by " + toTest.name() + " socket").length(),
+                                                                InetAddress.getByName("255.255.255.255"),
+                                                                SpringAR.UDP_SERVER_PORT
+                                                                             );
+                             break;
+                            case bindsend:
+                                snd_packet = new DatagramPacket(("Testmessage send by " + toTest.name() + " socket").getBytes(),
+                                        ("Testmessage send by " + toTest.name() + " socket").length(),
+                                        InetAddress.getByName("192.168.178.20"),
+                                        SpringAR.UDP_SERVER_PORT
+                                );
+                                break;
+                        }
+                        sendSocket.send(snd_packet);
+                        boolTestCaseDone=true;
+                    } catch (IOException e1) {
+                    }
+                }
+                try {
+                    Thread.sleep(SpringAR.TIME_OUT_IN_BROADCAST);
+                } catch (InterruptedException e) {
+                    Log.d(SpringAR.protocollDebugLogPrefix, " Broadcast Interrupted");
+                }
+
+            }
+        }
+        }
+*/

@@ -18,6 +18,9 @@ import android.util.Log;
 import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.helpers.comonUtils;
 
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+
 public class Server {
     //Server Port
     //0.0.0.0 able to recieve all (any address)
@@ -74,14 +77,13 @@ public class Server {
                 }
             }
         }
-
-
     }
 
     public DatagramSocket createSocket(InetAddress ipAddress, int port) {
         try {
             DatagramSocket socket = new DatagramSocket(null);
             InetSocketAddress address = new InetSocketAddress(ipAddress, port);
+            socket.setReuseAddress(true);
             socket.bind(address);
 
             return socket;
@@ -94,23 +96,20 @@ public class Server {
 
     public DatagramSocket getBroadcastListenerSocket() throws IOException {
 
-        InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 9000);
+        InetSocketAddress anyAdress = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 9000);
         DatagramSocket socket = new DatagramSocket(null);
         socket.setSoTimeout(30);
-        socket.bind(address);
+        socket.setReuseAddress(true);
+        socket.bind(anyAdress);
         return socket;
     }
 
-    public DatagramSocket setSocketBroadcast(DatagramSocket oldSocket) {
-        if (oldSocket != null && oldSocket.isBound()) {
-            closeSocket(oldSocket);
-        }
+    public DatagramSocket getBroadcastSenderSocket(DatagramSocket oldSocket) {
+
         DatagramSocket socket = null;
         try {
             ARDeviceAddress = InetAddress.getByName(comonUtils.getIPAddress(true));
-
-            // senderSocket = createSocket(ARDeviceAddress, SpringAR.UDP_SERVER_PORT);
-            socket = createSocket(InetAddress.getByName("0.0.0.0"), SpringAR.UDP_SERVER_PORT);
+            socket = getSocket(oldSocket, ARDeviceAddress, SpringAR.UDP_SERVER_PORT, null);
             socket.setBroadcast(true);
             socket.setSoTimeout(SpringAR.TIME_OF_FRAME_IN_MS);
         } catch (IOException e) {
@@ -120,7 +119,7 @@ public class Server {
         return socket;
     }
 
-    public DatagramSocket setSocketAddress(DatagramSocket oldSocket, InetAddress ipAddress, int port, InetAddress targetAddress) {
+    public DatagramSocket getSocket(DatagramSocket oldSocket, InetAddress ipAddress, int port, InetAddress targetAddress) {
 
         if (oldSocket != null ) {
             closeSocket(oldSocket);
@@ -142,6 +141,7 @@ public class Server {
 
     //Constructor
     public Server(Context context, IPackageRecivedCallback packageRecipient) {
+        Log.d(SpringAR.protocollDebugLogPrefix, "Server starting");
         State = SpringAR.comStates.STATE_resetCommunication;
         this.packageRecipient = packageRecipient;
         this.context = context;
@@ -161,6 +161,7 @@ public class Server {
         datagramReciever.start();
         watchDog = new Stopwatch();
         watchDog.start();
+        Log.d(SpringAR.protocollDebugLogPrefix, "Server start completed");
     }
 
     //Restart the Server on Resume
@@ -208,142 +209,23 @@ public class Server {
             closeSocket(broadCastListenerSocket);
         }
 
-        /*
-        private void testLoop() throws IOException {
-        int modeSelector= 0;
-            DatagramSocket sendSocket = null;
-            DatagramSocket recieveSocket = null;
 
-
-        while (true) {
-            SpringAR.testCases toTest = SpringAR.testCases.bindsend;
-            closeSocket(sendSocket);
-            closeSocket(recieveSocket);
-
-            modeSelector = (modeSelector+1)%4;
-                switch (modeSelector){
-                    case 0:  toTest = SpringAR.testCases.broadcastsend;break;
-                    case 1: toTest = SpringAR.testCases.bindsend;break;
-                    case 2: toTest = SpringAR.testCases.broadcastrecieve;break;
-                    case 3: toTest = SpringAR.testCases.bindrecieve;break;
-
-                }
-
-
-
-            InetSocketAddress address;
-
-            switch (toTest) {
-
-                case broadcastrecieve:
-                    address = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 9000);
-                    recieveSocket = new DatagramSocket(null);
-                    recieveSocket.setSoTimeout(30);
-                    recieveSocket.bind(address);
-
-                    break;
-                case broadcastsend:
-                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
-                    sendSocket = new DatagramSocket(null);
-                    sendSocket.setSoTimeout(30);
-                    sendSocket.setBroadcast(true);
-                    sendSocket.bind(address);
-                    break;
-
-                case bindsend:
-                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
-                    sendSocket = new DatagramSocket(null);
-                    sendSocket.setSoTimeout(30);
-                    sendSocket.bind(address);
-                    InetSocketAddress remoteAddress = new InetSocketAddress(InetAddress.getByName("192.168.178.20"), 9000);
-                    sendSocket.connect(remoteAddress);
-                    sendSocket.setBroadcast(false);
-                    break;
-
-                case bindrecieve:
-                    address = new InetSocketAddress(InetAddress.getByName("192.168.178.178"), 9000);
-                    recieveSocket = new DatagramSocket(null);
-                    recieveSocket.setSoTimeout(30);
-                    recieveSocket.bind(address);
-                    InetSocketAddress remoteAddressr = new InetSocketAddress(InetAddress.getByName("192.168.178.20"), 9000);
-                    sendSocket.connect(remoteAddressr);
-                    recieveSocket.setBroadcast(false);
-                    break;
-            }
-            boolean boolTestCaseDone = false;
-            while (!boolTestCaseDone) {
-                Log.d(SpringAR.protocollDebugLogPrefix, "TestLoop in testcase : "+ toTest.name()+ " :");
-                String dbg_message;
-                if (recieveSocket != null) {
-                    try {
-                        DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message[writeBuffer].length);
-                        recieveSocket.receive(rcv_packet);
-                        dbg_message = new String(rcv_message[writeBuffer], 0, rcv_packet.getLength(), "US-ASCII");
-                        Log.d(SpringAR.dataDebugLogPrefix, "" + rcv_packet.getAddress().getHostAddress() + ": " + dbg_message.trim() + " via ");
-                        boolTestCaseDone=true;
-                    } catch (SocketTimeoutException e) {
-
-                    }
-                }
-
-                if (sendSocket != null ) {
-                    try {
-                        DatagramPacket snd_packet = null;
-                        switch (toTest) {
-                            case broadcastsend:
-                             snd_packet = new DatagramPacket(("Testmessage send by " + toTest.name() + " socket").getBytes(),
-                                                              ("Testmessage send by " + toTest.name() + " socket").length(),
-                                                                InetAddress.getByName("255.255.255.255"),
-                                                                SpringAR.UDP_SERVER_PORT
-                                                                             );
-                             break;
-                            case bindsend:
-                                snd_packet = new DatagramPacket(("Testmessage send by " + toTest.name() + " socket").getBytes(),
-                                        ("Testmessage send by " + toTest.name() + " socket").length(),
-                                        InetAddress.getByName("192.168.178.20"),
-                                        SpringAR.UDP_SERVER_PORT
-                                );
-                                break;
-                        }
-                        sendSocket.send(snd_packet);
-                        boolTestCaseDone=true;
-                    } catch (IOException e1) {
-                    }
-                }
-                try {
-                    Thread.sleep(SpringAR.TIME_OUT_IN_BROADCAST);
-                } catch (InterruptedException e) {
-                    Log.d(SpringAR.protocollDebugLogPrefix, " Broadcast Interrupted");
-                }
-
-            }
-        }
-        }
-*/
 
         public void run() {
-
-            //Log.d(SpringAR.protocollDebugLogPrefix, "Server Run started");
-            //  try {
-            //      testLoop();
-            //} catch (IOException e) {
-            //   e.printStackTrace();
-            //}
 
             try {
 
                 initializeBroadcastConnection();
 
                 while (true) {
-                    //Log.d(SpringAR.protocollDebugLogPrefix, "Server Run Entered recieve");
+
                     //Recieving Datagramm
                     DatagramPacket rcv_packet = new DatagramPacket(rcv_message[writeBuffer], rcv_message[writeBuffer].length);
                     boolean NewMessageArrived = true;
                     try {
                         listenerSocket.receive(rcv_packet);
                     } catch (SocketTimeoutException e) {
-                        //Log.d(SpringAR.dataDebugLogPrefix, "Timeout before recieving");
-                        NewMessageArrived = false;
+                          NewMessageArrived = false;
                     }
                     //Watchdog
                     handleWatchDogTimer(State);
@@ -353,11 +235,11 @@ public class Server {
                         dbg_message = new String(rcv_message[writeBuffer], 0, rcv_packet.getLength(), "US-ASCII");
                         Log.d(SpringAR.dataDebugLogPrefix, "" + rcv_packet.getAddress().getHostAddress() + ": " + dbg_message.trim() + " of " + rcv_packet.getLength() + "length ");
                     }
-                    //Log.d(SpringAR.protocollDebugLogPrefix, "Server Run Entered State machine");
 
-                    connectionStateMachine(rcv_message);
+                    if (validatePackageSender(rcv_packet)) {
+                        connectionStateMachine(rcv_message, rcv_packet);
+                    }
 
-                    //Log.d(SpringAR.protocollDebugLogPrefix, "Server Run Entered Sending");
                     //Sending Datagram
                     if (newDatagramToSend && hostIpAddress != null) {
                         //Log.d(SpringAR.protocollDebugLogPrefix, "Server sending: " + datagramToSend);
@@ -371,8 +253,8 @@ public class Server {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                             //causes     Caused by: android.system.ErrnoException: sendto failed: EINVAL (Invalid argument)
-                            //Log.d(SpringAR.protocollDebugLogPrefix, "Server Error Sending in " + State.name());
-                            assert (false);
+                            Log.e(SpringAR.protocollDebugLogPrefix, "Server Error in State: " + State.name());
+                           break;
                         }
 
                     }
@@ -385,27 +267,27 @@ public class Server {
 
         private void initializeBroadcastConnection() throws IOException {
             ARDeviceAddress = InetAddress.getByName(comonUtils.getIPAddress(true));
-            senderSocket = setSocketAddress(null, ARDeviceAddress, SpringAR.UDP_SERVER_PORT, null);
+            senderSocket = getSocket(null, ARDeviceAddress, SpringAR.UDP_SERVER_PORT, null);
             broadCastListenerSocket = getBroadcastListenerSocket();
             listenerSocket = broadCastListenerSocket;
+            Log.d(SpringAR.protocollDebugLogPrefix, "initializeBroadcastConnection completed");
         }
 
 
         // handles management traffic like configurstion files
-        private void connectionStateMachine(byte[][] payload) throws IOException {
+        private void connectionStateMachine(byte[][] payload, DatagramPacket rcv_packet) throws IOException {
             //Reset triggered by Host
-            if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveResetHeaderByte) != -1) {
+            if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveResetHeaderByte) != SpringAR.STRING_NOT_FOUND) {
                 State = SpringAR.comStates.STATE_resetCommunication;
             }
 
             Log.d(SpringAR.protocollDebugLogPrefix, "ConnectionStateMachine: " + State.name());
             switch (State) {
-
                 case STATE_resetCommunication: {
                     messageCounter = 0;
                     listenerSocket = broadCastListenerSocket;
                     hostIpAddress = comonUtils.getBroadcastAddress(context);
-                    senderSocket = setSocketBroadcast(senderSocket);
+                    senderSocket = getBroadcastSenderSocket(senderSocket);
                     setSendToSpringMessage(SpringAR.sendResetHeader);
                     State = SpringAR.comStates.STATE_broadCastHeader;
 
@@ -413,17 +295,19 @@ public class Server {
                 }
 
                 case STATE_broadCastHeader: {
-                    if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveHostReplyHeaderByte) != -1) {
+                    if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveHostReplyHeaderByte) != SpringAR.STRING_NOT_FOUND) {
                         Log.d(SpringAR.protocollDebugLogPrefix, " Host Reply Header recieved");
                         //Extract the hostIp
                         String hostIpAdressAsString = new String(payload[writeBuffer]);
-                        hostIpAdressAsString = hostIpAdressAsString.replace(SpringAR.recieveHostReplyHeader, "");
+                        hostIpAdressAsString = hostIpAdressAsString.replace(SpringAR.recieveHostReplyHeader, "").trim();
+                        Log.d(SpringAR.dataDebugLogPrefix, hostIpAdressAsString);
+
                         hostIpAddress = InetAddress.getByName(hostIpAdressAsString);
 
                         //Set Connection from broadcast to target
                         ARDeviceAddress = InetAddress.getByName(comonUtils.getIPAddress(true));
                         Log.d(SpringAR.protocollDebugLogPrefix, " New Device Adress " + ARDeviceAddress);
-                        senderSocket = setSocketAddress(senderSocket, ARDeviceAddress, SpringAR.UDP_SERVER_PORT, hostIpAddress);
+                        senderSocket = getSocket(senderSocket, ARDeviceAddress, SpringAR.UDP_SERVER_PORT, hostIpAddress);
                         listenerSocket = senderSocket;
                         State = SpringAR.comStates.STATE_sendCFG;
                         return;
@@ -432,16 +316,12 @@ public class Server {
 
                     setSendToSpringMessage(SpringAR.sendBroadcasteHeader);
 
-                    try {
-                        Thread.sleep(SpringAR.TIME_OUT_IN_BROADCAST);
-                    } catch (InterruptedException e) {
-                        Log.d(SpringAR.protocollDebugLogPrefix, " Broadcast Interrupted");
-                    }
+                    delayByMs(SpringAR.TIME_OUT_IN_BROADCAST);
                     return;
                 }
 
                 case STATE_sendCFG: {
-                    if (-1 != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveCFGHeaderByte)) {
+                    if ( SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveCFGHeaderByte )) {
 
                         State = SpringAR.comStates.STATE_sendRecieveData;
                         return;
@@ -452,14 +332,17 @@ public class Server {
                 }
 
                 case STATE_sendRecieveData: {
-                    if (-1 != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
-                        writeRecievedDataToBuffer(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
+                    if ( SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
+                        writeRecievedDataToBuffer(payload[writeBuffer], rcv_packet.getLength());
                     }
+                    break;
                 }
                 default:
                     Log.d(SpringAR.protocollDebugLogPrefix, "Connection State Machine invalid state");
 
             }
+
+
         }
 
         private void handleWatchDogTimer(SpringAR.comStates newState) {
@@ -497,29 +380,52 @@ public class Server {
         }
 
 
-        private void writeRecievedDataToBuffer(byte[] bytes, int length) {
-            boolean lastMessage = -1 != comonUtils.indexOf(bytes, SpringAR.recieveDataEndHeaderByte);
+        private void writeRecievedDataToBuffer(byte[] payload, int length) {
+            boolean lastMessage = SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload, SpringAR.recieveDataEndHeaderByte);
+            Log.d(SpringAR.dataDebugLogPrefix, "RecievedTotal Datagram of length "+length + " -> "+ payload.toString());
 
-            int startIndex = (lastMessage ?
-                    comonUtils.indexOf(bytes, SpringAR.recieveDataEndHeaderByte) + SpringAR.recieveDataEndHeader.length() :
-                    comonUtils.indexOf(bytes, SpringAR.seperator.getBytes(), comonUtils.indexOf(bytes, SpringAR.recieveDataHeaderByte))
-            );
+            int startIndex = 0;
+            if (lastMessage){
+                startIndex=  comonUtils.indexOf(payload, SpringAR.recieveDataEndHeaderByte) + SpringAR.recieveDataEndHeader.length() ;
+            }
+                            else {
+                startIndex=    comonUtils.indexOf(payload, SpringAR.seperator.getBytes(), comonUtils.indexOf(payload, SpringAR.recieveDataHeaderByte));
+            }
+
+            //clampIndex
+            startIndex= max(startIndex,0);
+            startIndex= min(startIndex,length);
+            Log.d(SpringAR.dataDebugLogPrefix, "RecievedData"+ payload.toString().substring(startIndex,payload.toString().length()));
 
             //Copy the data over
             for (int writeIndex = 0; writeIndex < length - startIndex; writeIndex++) {
-                rcv_message[writeBuffer][recieveByteIndex + writeIndex] = bytes[writeIndex];
+                rcv_message[writeBuffer][recieveByteIndex + writeIndex] = payload[startIndex + writeIndex];
             }
 
             //update the write Index
             recieveByteIndex = recieveByteIndex + length;
 
             if (lastMessage) {
-                //do the callback necessary
+                //do the deferred callback necessary
                 switchBuffer();
                 packageRecipient.callback(rcv_message[getReadBuffer()], rcv_message[getReadBuffer()].length);
             }
         }
 
+        public void delayByMs(int timeInMs) {
+            try {
+                Thread.sleep(timeInMs);
+            } catch (InterruptedException e) {
+                Log.d(SpringAR.protocollDebugLogPrefix, " Broadcast Interrupted");
+            }
 
+
+        }
+
+    }
+
+    private boolean validatePackageSender(DatagramPacket rcv_packet) {
+    //TODO Validate the hostipadress of the package to prevent ip spoofing
+    return true;
     }
 }

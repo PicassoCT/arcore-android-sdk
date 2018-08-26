@@ -8,15 +8,13 @@ public  final  class SpringAR {
 
     public static long watchDogTimeOutInMs = 30 * 1000;
     public static long snackBarUpdateTimeInMs =  1000;
+    public static int STRING_NOT_FOUND  = -1;
 
     public  enum comStates {
         STATE_broadCastHeader ,
         STATE_sendCFG,
         STATE_resetCommunication,
         STATE_sendRecieveData
-
-
-
     };
 
 

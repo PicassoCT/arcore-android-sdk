@@ -10,6 +10,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -271,6 +272,8 @@ public class comonUtils {
 
         return null;
     }
+
+
 
 
 }

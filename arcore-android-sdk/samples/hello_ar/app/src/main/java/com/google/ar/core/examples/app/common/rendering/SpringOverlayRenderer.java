@@ -373,9 +373,14 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     }
 
+    public static String getLastMessage() {
+       return  tcpConnection.datagramReciever.dbg_message ;
+    }
+
     public static void logRecievedData() {
         Log.d(SpringAR.protocollDebugLogPrefix,  tcpConnection.datagramReciever.dbg_message );
     }
+
     static String oldData;
     public static boolean newDataRecieved() {
         if (!tcpConnection.datagramReciever.dbg_message.equalsIgnoreCase(oldData)){
