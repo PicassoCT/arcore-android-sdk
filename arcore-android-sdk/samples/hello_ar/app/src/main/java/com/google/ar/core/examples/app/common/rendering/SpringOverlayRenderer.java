@@ -222,7 +222,7 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
     /*updates the Data*/
     public void update(Camera camera, Anchor groundAnchor) {
-        //Log.d(TAG, "Spring OverlayRender Update called");
+
         if (tcpConnection == null) {
             tcpConnection = new Server(context, this);
         }
@@ -231,12 +231,9 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
             //Get Camera Position relative to MapCenter
             if (camera.getTrackingState() == TrackingState.TRACKING) {
+                Log.d(SpringAR.dataDebugLogPrefix, "Sending Matrice to Spring");
                 tcpConnection.datagramReciever.setSendToSpringMessage(
                         buildGroundAnchorMessage(camera.getPose(),
-                                getMapCenterFromAnchor(groundAnchor)));
-            } else {
-                tcpConnection.datagramReciever.setSendToSpringMessage(
-                        buildGroundAnchorMessage(camera.getDisplayOrientedPose(),
                                 getMapCenterFromAnchor(groundAnchor)));
             }
         }

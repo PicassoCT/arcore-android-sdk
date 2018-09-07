@@ -1,6 +1,1 @@
-1. We know a 0.0.0.0 Socket gets all Packages
-2. We know that a regular socket will directly adressed packages.
-3. We do know that a regular socket can send  broadcasts
-
-
-4. Adapt the
+- Transfer the Matrice to the device
