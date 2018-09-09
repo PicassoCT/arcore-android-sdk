@@ -14,6 +14,7 @@ public  final  class SpringAR {
         STATE_broadCastHeader ,
         STATE_sendCFG,
         STATE_resetCommunication,
+        STATE_waitingForResetComplete,
         STATE_sendRecieveData
     };
 
@@ -26,7 +27,7 @@ public  final  class SpringAR {
     //Protocol element strings
     public static final String seperator = ";";
 
-    public static final String sendResetHeader = "SPRINGAR;RESET=DEVICE;";
+    public static final String sendResetHeader = "SPRINGAR;RESET;";
     public static final byte[] sendResetHeaderByte = sendResetHeader.getBytes();
 
     public static final String sendBroadcasteHeader = "SPRINGAR;BROADCAST;ARDEVICE;";
@@ -44,8 +45,8 @@ public  final  class SpringAR {
     public static final String recieveCFGHeader = "SPRINGAR;CFG;RECIEVED;";
     public static final byte[] recieveCFGHeaderByte = recieveCFGHeader.getBytes();
 
-    public static final String recieveResetHeader = "SPRINGAR;RESET=HOST;";
-    public static final byte[] recieveResetHeaderByte = recieveResetHeader.getBytes();
+    public static final String recieveResetCompleteHeader = "SPRINGAR;RESET_COMPLETE;";
+    public static final byte[] recieveResetCompleteHeaderByte = recieveResetCompleteHeader.getBytes();
 
     public static final String recieveDataHeader = "SPRINGAR;DATA=";
     public static final byte[] recieveDataHeaderByte = SpringAR.recieveDataHeader.getBytes();
@@ -56,8 +57,8 @@ public  final  class SpringAR {
 
 
     public static final int UDP_SERVER_PORT = 9000;
-    public static final  int TIME_OF_FRAME_IN_MS = 30;
-    public static final int TIME_OUT_IN_BROADCAST = 250;
+    public static final  int TIME_OF_FRAME_IN_MS = 1000;
+    public static final int TIME_OUT_IN_BROADCAST = 100;
     public static int MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes
             + 25 // IHDR chunk
             + 12 // IDAT chunk (assuming only one IDAT chunk)

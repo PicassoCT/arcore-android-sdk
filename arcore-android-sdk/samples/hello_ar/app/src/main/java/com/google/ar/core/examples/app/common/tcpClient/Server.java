@@ -98,7 +98,7 @@ public class Server {
 
         InetSocketAddress anyAdress = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 9000);
         DatagramSocket socket = new DatagramSocket(null);
-        socket.setSoTimeout(30);
+        socket.setSoTimeout(SpringAR.TIME_OF_FRAME_IN_MS);
         socket.setReuseAddress(true);
         socket.bind(anyAdress);
         return socket;
@@ -273,15 +273,16 @@ public class Server {
             Log.d(SpringAR.protocollDebugLogPrefix, "initializeBroadcastConnection completed");
         }
 
+         SpringAR.comStates  oldStatemachineState = SpringAR.comStates.STATE_resetCommunication;
 
         // handles management traffic like configurstion files
         private void connectionStateMachine(byte[][] payload, DatagramPacket rcv_packet) throws IOException {
             //Reset triggered by Host
-            if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveResetHeaderByte) != SpringAR.STRING_NOT_FOUND) {
-                State = SpringAR.comStates.STATE_resetCommunication;
-            }
 
-            Log.d(SpringAR.protocollDebugLogPrefix, "ConnectionStateMachine: " + State.name());
+            if (oldStatemachineState != State) {
+                Log.d(SpringAR.protocollDebugLogPrefix, "ConnectionStateMachine: " + State.name());
+                oldStatemachineState = State;
+            }
             switch (State) {
                 case STATE_resetCommunication: {
                     messageCounter = 0;
@@ -289,12 +290,20 @@ public class Server {
                     hostIpAddress = comonUtils.getBroadcastAddress(context);
                     senderSocket = getBroadcastSenderSocket(senderSocket);
                     setSendToSpringMessage(SpringAR.sendResetHeader);
-                    State = SpringAR.comStates.STATE_broadCastHeader;
+                    State = SpringAR.comStates.STATE_waitingForResetComplete;
+
+                    return;
+                }
+                case STATE_waitingForResetComplete: {
+                    if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveResetCompleteHeaderByte) != SpringAR.STRING_NOT_FOUND) {
+                        State = SpringAR.comStates.STATE_broadCastHeader;
+                    }
 
                     return;
                 }
 
                 case STATE_broadCastHeader: {
+
                     if (comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveHostReplyHeaderByte) != SpringAR.STRING_NOT_FOUND) {
                         Log.d(SpringAR.protocollDebugLogPrefix, " Host Reply Header recieved");
                         //Extract the hostIp
@@ -315,7 +324,7 @@ public class Server {
 
                     setSendToSpringMessage(SpringAR.sendBroadcasteHeader);
 
-                    //delayByMs(SpringAR.TIME_OUT_IN_BROADCAST);
+                    delayByMs(SpringAR.TIME_OUT_IN_BROADCAST);
                     return;
                 }
 
@@ -331,8 +340,7 @@ public class Server {
                 }
 
                 case STATE_sendRecieveData: {
-                    if ( true == false && SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
-                        //TODO DebugMe
+                    if ( SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
                         writeRecievedDataToBuffer(payload[writeBuffer], rcv_packet.getLength());
                     }
                     break;
@@ -377,7 +385,7 @@ public class Server {
             if ( senderSocket.getInetAddress() != null){
                 targetIpAdress = senderSocket.getInetAddress().toString();
             }
-            Log.d(SpringAR.dataDebugSendLogPrefix, toSend + " to " +targetIpAdress);
+            Log.d(SpringAR.dataDebugSendLogPrefix, toSend + " to "+targetIpAdress );
             datagramToSend = toSend;
             newDatagramToSend = true;
             messageCounter++;
@@ -387,7 +395,7 @@ public class Server {
 
         private void writeRecievedDataToBuffer(byte[] payload, int length) {
             boolean lastMessage = SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload, SpringAR.recieveDataEndHeaderByte);
-
+            Log.d(SpringAR.dataDebugRecieveLogPrefix, "Recieved Bufferdata -> "+ payload.toString());
 
             int startIndex = 0;
             if (lastMessage){

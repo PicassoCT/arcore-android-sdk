@@ -381,7 +381,7 @@ public class SpringARActivity extends AppCompatActivity implements GLSurfaceView
 
           //  if (springOverlayRenderer.stateChangeHappend())
             //    messageSnackbarHelper.showMessage(this, springOverlayRenderer.getMachineStateAsString());
-              if (!messageSnackbarHelper.isShowing()  || springOverlayRenderer.newDataRecieved()) {
+              if (!messageSnackbarHelper.isShowing()  && springOverlayRenderer.newDataRecieved()) {
                   messageSnackbarHelper.showMessage( this, springOverlayRenderer.getMachineStateAsString()+"|->"+ SpringOverlayRenderer.getLastMessage() );
                   springOverlayRenderer.logRecievedData();
               }
