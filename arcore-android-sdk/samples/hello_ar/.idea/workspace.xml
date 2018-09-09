@@ -6,7 +6,7 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="DBG_PROTOCOLL" />
+    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="178.20" />
     <option name="TOOL_WINDOW_LOG_LEVEL" value="verbose" />
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="No Filters" />
     <option name="TOOL_WINDOW_REGEXP_FILTER" value="false" />
@@ -34,11 +34,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-      <file leaf-file-name="Server.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Server.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/tcpClient/Server.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2457">
-              <caret line="263" column="37" lean-forward="true" selection-start-line="263" selection-start-column="37" selection-end-line="263" selection-end-column="37" />
+            <state relative-caret-position="604">
+              <caret line="325" column="31" lean-forward="false" selection-start-line="325" selection-start-column="31" selection-end-line="325" selection-end-column="31" />
               <folding>
                 <element signature="method#kill#0;class#DatagramReciever#0;class#Server#0" expanded="false" />
               </folding>
@@ -52,7 +52,7 @@
             <state />
           </provider>
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="231">
+            <state relative-caret-position="425">
               <caret line="25" column="2" lean-forward="false" selection-start-line="25" selection-start-column="2" selection-end-line="25" selection-end-column="2" />
               <folding />
             </state>
@@ -185,8 +185,8 @@
       <file leaf-file-name="SystematicApproach" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/SystematicApproach">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="36" lean-forward="false" selection-start-line="0" selection-start-column="36" selection-end-line="0" selection-end-column="36" />
+            <state relative-caret-position="374">
+              <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -195,8 +195,8 @@
       <file leaf-file-name="SpringAR.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/SpringAR.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="21" column="31" lean-forward="false" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="31" />
+            <state relative-caret-position="443">
+              <caret line="50" column="45" lean-forward="false" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
               <folding />
             </state>
           </provider>
@@ -205,8 +205,8 @@
       <file leaf-file-name="SpringOverlayRenderer.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/rendering/SpringOverlayRenderer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="236" column="29" lean-forward="false" selection-start-line="236" selection-start-column="29" selection-end-line="236" selection-end-column="29" />
+            <state relative-caret-position="464">
+              <caret line="389" column="25" lean-forward="false" selection-start-line="389" selection-start-column="25" selection-end-line="389" selection-end-column="25" />
               <folding>
                 <element signature="e#13466#13467#0" expanded="true" />
                 <element signature="e#13532#13533#0" expanded="true" />
@@ -215,13 +215,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SpringARActivity.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SpringARActivity.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/springar/SpringARActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5525">
-              <caret line="384" column="135" lean-forward="false" selection-start-line="384" selection-start-column="135" selection-end-line="384" selection-end-column="135" />
+            <state relative-caret-position="1824">
+              <caret line="371" column="42" lean-forward="false" selection-start-line="371" selection-start-column="42" selection-end-line="371" selection-end-column="42" />
               <folding>
-                <element signature="e#0#17316#0" expanded="true" />
+                <element signature="e#0#17356#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -2311,12 +2311,12 @@
         <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/Stopwatch.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/tcpClient/dump" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/comonUtils.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/SpringAR.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/springar/SpringARActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/tcpClient/Server.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/SystematicApproach" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/rendering/SpringOverlayRenderer.java" />
         <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/SpringAR.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/SystematicApproach" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/tcpClient/Server.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/springar/SpringARActivity.java" />
       </list>
     </option>
   </component>
@@ -2340,10 +2340,10 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane" />
+      <pane id="Scratches" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="AndroidView">
         <subPane>
           <expand>
@@ -2577,7 +2577,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13965885" sideWeight="0.50869566" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24891305" sideWeight="0.5021322" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.32934782" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="-1080" y="156" width="1080" height="1857" />
@@ -2587,7 +2587,7 @@
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13965885" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13965885" sideWeight="0.49130434" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Build" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22826087" sideWeight="0.4978678" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -2612,7 +2612,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="19" />
+      <option name="time" value="20" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="app">
@@ -2902,59 +2902,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="833">
           <caret line="72" column="16" lean-forward="false" selection-start-line="72" selection-start-column="16" selection-end-line="72" selection-end-column="16" />
-          <folding>
-            <marker date="1530561426614" expanded="false" signature="0:104" ph="/.../" />
-            <marker date="1530561426614" expanded="false" signature="132:220" ph="..." />
-            <marker date="1530561426614" expanded="true" signature="324:376" ph="{...}" />
-            <marker date="1530561426614" expanded="false" signature="431:442" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="478:484" ph=" }" />
-            <marker date="1530561426614" expanded="true" signature="559:611" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="672:724" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="804:856" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="935:987" ph="{...}" />
-            <marker date="1530561426614" expanded="false" signature="1043:1054" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1090:1096" ph=" }" />
-            <marker date="1530561426614" expanded="true" signature="1165:1217" ph="{...}" />
-            <marker date="1530561426614" expanded="false" signature="1247:1258" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1294:1300" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1330:1341" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1377:1383" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1417:1428" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1464:1470" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1511:1522" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1558:1564" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1590:1601" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1637:1643" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1694:1705" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1741:1747" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="1797:1808" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="1844:1850" ph=" }" />
-            <marker date="1530561426614" expanded="true" signature="1910:1962" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2038:2090" ph="{...}" />
-            <marker date="1530561426614" expanded="false" signature="2132:2143" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="2179:2185" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="2216:2227" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="2263:2269" ph=" }" />
-            <marker date="1530561426614" expanded="true" signature="2349:2401" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2469:2521" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2603:2655" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2728:2780" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2865:2917" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="2993:3045" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3127:3179" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3254:3306" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3385:3437" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3509:3561" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3639:3691" ph="{...}" />
-            <marker date="1530561426614" expanded="true" signature="3762:3814" ph="{...}" />
-            <marker date="1530561426614" expanded="false" signature="3839:3850" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="3886:3892" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="3923:3934" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="3970:3976" ph=" }" />
-            <marker date="1530561426614" expanded="false" signature="4017:4028" ph=" { " />
-            <marker date="1530561426614" expanded="false" signature="4064:4070" ph=" }" />
-            <marker date="1530561426614" expanded="true" signature="4187:4239" ph="{...}" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2963,16 +2910,6 @@
         <state relative-caret-position="1887">
           <caret line="111" column="2" lean-forward="false" selection-start-line="111" selection-start-column="2" selection-end-line="111" selection-end-column="2" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/springar/SpringARActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5525">
-          <caret line="384" column="135" lean-forward="false" selection-start-line="384" selection-start-column="135" selection-end-line="384" selection-end-column="135" />
-          <folding>
-            <element signature="e#0#17316#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3075,14 +3012,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/SpringAR.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="21" column="31" lean-forward="false" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/comonUtils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
@@ -3091,18 +3020,29 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider editor-type-id="android-manifest">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="2" lean-forward="false" selection-start-line="25" selection-start-column="2" selection-end-line="25" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/SystematicApproach">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="36" lean-forward="false" selection-start-line="0" selection-start-column="36" selection-end-line="0" selection-end-column="36" />
+        <state relative-caret-position="374">
+          <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/rendering/SpringOverlayRenderer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="236" column="29" lean-forward="false" selection-start-line="236" selection-start-column="29" selection-end-line="236" selection-end-column="29" />
+        <state relative-caret-position="464">
+          <caret line="389" column="25" lean-forward="false" selection-start-line="389" selection-start-column="25" selection-end-line="389" selection-end-column="25" />
           <folding>
             <element signature="e#13466#13467#0" expanded="true" />
             <element signature="e#13532#13533#0" expanded="true" />
@@ -3110,23 +3050,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider editor-type-id="android-manifest">
-        <state />
-      </provider>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/helpers/SpringAR.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="231">
-          <caret line="25" column="2" lean-forward="false" selection-start-line="25" selection-start-column="2" selection-end-line="25" selection-end-column="2" />
+        <state relative-caret-position="443">
+          <caret line="50" column="45" lean-forward="false" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/common/tcpClient/Server.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2457">
-          <caret line="263" column="37" lean-forward="true" selection-start-line="263" selection-start-column="37" selection-end-line="263" selection-end-column="37" />
+        <state relative-caret-position="604">
+          <caret line="325" column="31" lean-forward="false" selection-start-line="325" selection-start-column="31" selection-end-line="325" selection-end-column="31" />
           <folding>
             <element signature="method#kill#0;class#DatagramReciever#0;class#Server#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/google/ar/core/examples/app/springar/SpringARActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1824">
+          <caret line="371" column="42" lean-forward="false" selection-start-line="371" selection-start-column="42" selection-end-line="371" selection-end-column="42" />
+          <folding>
+            <element signature="e#0#17356#0" expanded="true" />
           </folding>
         </state>
       </provider>

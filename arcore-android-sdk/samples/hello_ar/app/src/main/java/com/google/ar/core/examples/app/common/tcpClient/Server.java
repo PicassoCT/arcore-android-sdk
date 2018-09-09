@@ -233,7 +233,7 @@ public class Server {
                     //TODO Delete String conversion
                     if (NewMessageArrived) {
                         dbg_message = new String(rcv_message[writeBuffer], 0, rcv_packet.getLength(), "US-ASCII");
-                        Log.d(SpringAR.dataDebugLogPrefix, "" + rcv_packet.getAddress().getHostAddress() + ": " + dbg_message.trim() + " of " + rcv_packet.getLength() + "length ");
+                        Log.d(SpringAR.dataDebugRecieveLogPrefix, "" + rcv_packet.getAddress().getHostAddress() + ": " + dbg_message.trim() + " of " + rcv_packet.getLength() + "length ");
                     }
 
                     if (validatePackageSender(rcv_packet)) {
@@ -300,7 +300,6 @@ public class Server {
                         //Extract the hostIp
                         String hostIpAdressAsString = new String(payload[writeBuffer]);
                         hostIpAdressAsString = hostIpAdressAsString.replace(SpringAR.recieveHostReplyHeader, "").trim();
-                        Log.d(SpringAR.dataDebugLogPrefix, hostIpAdressAsString);
 
                         hostIpAddress = InetAddress.getByName(hostIpAdressAsString);
 
@@ -316,7 +315,7 @@ public class Server {
 
                     setSendToSpringMessage(SpringAR.sendBroadcasteHeader);
 
-                    delayByMs(SpringAR.TIME_OUT_IN_BROADCAST);
+                    //delayByMs(SpringAR.TIME_OUT_IN_BROADCAST);
                     return;
                 }
 
@@ -332,7 +331,8 @@ public class Server {
                 }
 
                 case STATE_sendRecieveData: {
-                    if ( SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
+                    if ( true == false && SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload[writeBuffer], SpringAR.recieveDataHeaderByte)) {
+                        //TODO DebugMe
                         writeRecievedDataToBuffer(payload[writeBuffer], rcv_packet.getLength());
                     }
                     break;
@@ -373,6 +373,11 @@ public class Server {
         public boolean setSendToSpringMessage(String toSend) {
             if (newDatagramToSend) return false;
 
+            String targetIpAdress = new String();
+            if ( senderSocket.getInetAddress() != null){
+                targetIpAdress = senderSocket.getInetAddress().toString();
+            }
+            Log.d(SpringAR.dataDebugSendLogPrefix, toSend + " to " +targetIpAdress);
             datagramToSend = toSend;
             newDatagramToSend = true;
             messageCounter++;
@@ -382,7 +387,7 @@ public class Server {
 
         private void writeRecievedDataToBuffer(byte[] payload, int length) {
             boolean lastMessage = SpringAR.STRING_NOT_FOUND != comonUtils.indexOf(payload, SpringAR.recieveDataEndHeaderByte);
-            Log.d(SpringAR.dataDebugLogPrefix, "RecievedTotal Datagram of length "+length + " -> "+ payload.toString());
+
 
             int startIndex = 0;
             if (lastMessage){
@@ -395,7 +400,7 @@ public class Server {
             //clampIndex
             startIndex= max(startIndex,0);
             startIndex= min(startIndex,length);
-            Log.d(SpringAR.dataDebugLogPrefix, "RecievedData"+ payload.toString().substring(startIndex,payload.toString().length()));
+
 
             //Copy the data over
             for (int writeIndex = 0; writeIndex < length - startIndex; writeIndex++) {

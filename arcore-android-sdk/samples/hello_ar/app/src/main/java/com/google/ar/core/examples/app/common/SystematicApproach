@@ -1,1 +1,22 @@
-- Transfer the Matrice to the device
+Pakete werden verschickt
+
+--PacketSender
+- Kommen Broadcast bei Spring an
+x
+- Kommen Direkte bei Spring an
+x
+
+- Kommen Broadcast bei ARDevice an
+x
+- Kommen Direkte bei ARDevice an
+x
+
+
+
+--Apps
+
+- Send Broadcast von Spring aus
+- Send Direkte von Spring aus
+
+
+- Send Broadcast von ARDevice aus

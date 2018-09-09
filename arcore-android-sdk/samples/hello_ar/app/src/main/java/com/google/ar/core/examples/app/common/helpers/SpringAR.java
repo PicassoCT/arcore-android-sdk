@@ -20,6 +20,8 @@ public  final  class SpringAR {
 
     public static final String protocollDebugLogPrefix = "DBG_PROTOCOLL";
     public static final String dataDebugLogPrefix = "DBG_DATA";
+    public static final String dataDebugSendLogPrefix = "DBG_DATA_SEND";
+    public static final String dataDebugRecieveLogPrefix = "DBG_DATA_RECIEVE";
 
     //Protocol element strings
     public static final String seperator = ";";
@@ -55,7 +57,7 @@ public  final  class SpringAR {
 
     public static final int UDP_SERVER_PORT = 9000;
     public static final  int TIME_OF_FRAME_IN_MS = 30;
-    public static final int TIME_OUT_IN_BROADCAST = 1000;
+    public static final int TIME_OUT_IN_BROADCAST = 250;
     public static int MAX_UDP_DATAGRAM_RCV_LEN = 8 // PNG signature bytes
             + 25 // IHDR chunk
             + 12 // IDAT chunk (assuming only one IDAT chunk)
