@@ -6,7 +6,7 @@ import android.os.Build;
 //Static Ressource class
 public  final  class SpringAR {
 
-    public static long watchDogTimeOutInMs = 30 * 1000;
+    public static long watchDogTimeOutInMs = 90 * 1000;
     public static long snackBarUpdateTimeInMs =  1000;
     public static int STRING_NOT_FOUND  = -1;
 
