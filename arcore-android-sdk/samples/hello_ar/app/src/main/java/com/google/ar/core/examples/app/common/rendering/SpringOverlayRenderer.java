@@ -233,19 +233,22 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             if (camera.getTrackingState() == TrackingState.TRACKING) {
                 Log.d(SpringAR.dataDebugLogPrefix, "Sending Matrice to Spring");
                 tcpConnection.datagramReciever.setSendToSpringMessage(
-                        buildGroundAnchorMessage(camera.getPose(),
-                                getMapCenterFromAnchor(groundAnchor)));
+                        buildGroundAnchorMessage(camera,
+                        getMapCenterFromAnchor(groundAnchor)));
             }
         }
     }
 
 
-    private String buildGroundAnchorMessage(Pose camPose, Pose anchorPose) {
+    private String buildGroundAnchorMessage(Camera camera, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
-        String message = SpringAR.sendCAMHeader + "MATRICE=";
-        float mat4_4[] = new float[16];
-        camPose.toMatrix(mat4_4, 0);
 
+        anchorPose= anchorPose.compose(camera.getPose());
+
+        float mat4_4[] = new float[16];
+        anchorPose.toMatrix(mat4_4, 0);
+
+        String message = SpringAR.sendCAMHeader + "MATRICE=";
         for (int i = 0; i < 16; i++) {
             message += (mat4_4[i] + SpringAR.seperator);
         }
