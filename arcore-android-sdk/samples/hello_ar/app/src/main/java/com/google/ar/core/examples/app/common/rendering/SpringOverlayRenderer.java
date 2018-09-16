@@ -15,7 +15,6 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.app.common.helpers.SnackbarHelper;
 import com.google.ar.core.examples.app.common.helpers.SpringAR;
 import com.google.ar.core.examples.app.common.helpers.Stopwatch;
 import com.google.ar.core.examples.app.common.tcpClient.IPackageRecivedCallback;
@@ -240,17 +239,26 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
     }
 
 
+    float rotQuaternion[] = new float[4];
+    float anchor_in_camCoord_mat[] = new float[16];
     private String buildGroundAnchorMessage(Camera camera, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
 
         anchorPose= anchorPose.compose(camera.getPose());
 
-        float mat4_4[] = new float[16];
-        anchorPose.toMatrix(mat4_4, 0);
+        //Add  Object Carmerapose
+        anchorPose.toMatrix(anchor_in_camCoord_mat, 0);
 
         String message = SpringAR.sendCAMHeader + "MATRICE=";
         for (int i = 0; i < 16; i++) {
-            message += (mat4_4[i] + SpringAR.seperator);
+            message += (anchor_in_camCoord_mat[i] + SpringAR.seperator);
+        }
+        //Add Rotation
+
+        camera.getPose().getRotationQuaternion(rotQuaternion,0);
+        message = message + "ROTATION=";
+        for (int i = 0; i < 4; i++) {
+            message += (rotQuaternion[i] + SpringAR.seperator);
         }
 
         return message;
