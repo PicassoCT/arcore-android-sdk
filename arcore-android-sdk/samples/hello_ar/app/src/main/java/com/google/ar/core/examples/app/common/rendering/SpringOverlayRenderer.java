@@ -232,14 +232,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
             if (camera.getTrackingState() == TrackingState.TRACKING) {
                 Log.d(SpringAR.dataDebugLogPrefix, "Sending Matrice to Spring");
                 tcpConnection.datagramReciever.setSendToSpringMessage(
-                        buildGroundAnchorMessage(camera,
-                        getMapCenterFromAnchor(groundAnchor)));
+                        buildGroundAnchorMessage(camera, groundAnchor.getPose()));
             }
         }
     }
 
 
-    float rotQuaternion[] = new float[4];
+    float rot_vec3[] = new float[3];
     float anchor_in_camCoord_mat[] = new float[16];
     private String buildGroundAnchorMessage(Camera camera, Pose anchorPose) {
         Log.e(TAG, "Server formCamMatriceMessage called");
@@ -253,12 +252,13 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
         for (int i = 0; i < 16; i++) {
             message += (anchor_in_camCoord_mat[i] + SpringAR.seperator);
         }
+        
         //Add Rotation
-
-        camera.getPose().getRotationQuaternion(rotQuaternion,0);
+        rot_vec3 = camera.getDisplayOrientedPose().getZAxis;
         message = message + "ROTATION=";
-        for (int i = 0; i < 4; i++) {
-            message += (rotQuaternion[i] + SpringAR.seperator);
+        
+        for (int i = 0; i < 3; i++) {
+            message += (rot_vec3[i] + SpringAR.seperator);
         }
 
         return message;
@@ -345,14 +345,6 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback {
 
 
         ShaderUtil.checkGLError(TAG, "Cleaning up after drawing planes");
-    }
-
-
-    /*Calculates the MapCenter
-     */
-    Pose getMapCenterFromAnchor(Anchor anchor) {
-        return anchor.getPose();
-
     }
 
 
