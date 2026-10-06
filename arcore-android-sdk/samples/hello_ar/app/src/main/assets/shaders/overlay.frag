@@ -20,7 +20,8 @@ precision highp float;
 
 
     void main() {
-        gl_FragColor =  texture2D( textureHandle, vec2 (uvwTexPassToFrag.x, uvwTexPassToFrag.y));
+        vec4 springColor = texture2D(textureHandle, vec2(uvwTexPassToFrag.x, uvwTexPassToFrag.y));
+        gl_FragColor = vec4(springColor.rgb, springColor.a * 0.75);
         //gl_FragColor = vec4(1.0 ,0.0,0.0,0.5);
 
     }
