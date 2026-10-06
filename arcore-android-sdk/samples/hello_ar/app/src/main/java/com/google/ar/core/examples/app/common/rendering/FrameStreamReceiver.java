@@ -93,6 +93,8 @@ public final class FrameStreamReceiver extends Thread {
         if (totalBytes < 14 || totalBytes > MAX_FRAME_BYTES) return;
         if (payloadBytes < 0 || HEADER_SIZE + payloadBytes > length) return;
 
+        if (currentFrameId != -1 && frameId < currentFrameId) return;
+
         if (frameId != currentFrameId) {
             beginFrame(frameId, width, height, chunkCount, totalBytes);
         }
@@ -162,9 +164,6 @@ public final class FrameStreamReceiver extends Thread {
         int width = readU32(qoi, 4);
         int height = readU32(qoi, 8);
         int channels = qoi[12] & 0xff;
-        if (width != currentWidth && currentWidth != 0) {
-            // currentWidth is reset before decode; packet header already validated.
-        }
         if (width < 1 || height < 1 || width > 1920 || height > 1080 || channels != 4) return null;
 
         int pixelCount = width * height;
