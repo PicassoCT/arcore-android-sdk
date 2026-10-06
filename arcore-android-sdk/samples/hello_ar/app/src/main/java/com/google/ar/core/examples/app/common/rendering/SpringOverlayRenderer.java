@@ -117,13 +117,12 @@ public class SpringOverlayRenderer implements IPackageRecivedCallback, FrameStre
         if (textures[0] == GLES20.GL_FALSE)
             throw new RuntimeException("Error loading uvwTex");
 
-        // bind the uvwTex and set parameters
-
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
-        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
         //Load first instance of the spring overlay
         // since we're using a PNG file with transparency, enable alpha blending.
         GLES20.glEnable(GLES20.GL_BLEND);
